@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Trinkwecker">
+  <title>Trinkwecker</title>
+  <defs>
+    <linearGradient id="tropfen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3ddc97"/>
+      <stop offset="1" stop-color="#2bb87b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Vollflächiger Hintergrund, damit auch ein maskiertes Icon sauber aussieht. -->
+  <rect width="512" height="512" fill="#0d1117"/>
+
+  <!-- Tropfen: Spitze oben, runder Bauch unten. Bleibt innerhalb der sicheren
+       Zone von 80 Prozent, die maskable Icons beschnitten bekommen. -->
+  <path d="M256 104 C 256 104 356 240 356 308 A 100 100 0 0 1 156 308 C 156 240 256 104 256 104 Z"
+        fill="url(#tropfen)"/>
+
+  <!-- Kleines Glanzlicht, damit der Tropfen nicht flach wirkt. -->
+  <ellipse cx="212" cy="312" rx="26" ry="38" fill="#ffffff" opacity=".22"/>
+</svg>

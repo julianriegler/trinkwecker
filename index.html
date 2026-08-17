@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Trinkwecker: kleine App, die daran erinnert, genug Wasser zu trinken.">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='27' font-size='27'>&#128167;</text></svg>">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Trinkwecker">
+<title>Trinkwecker</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --card-rand: #232a33;
+    --text: #e6edf3;
+    --text-leise: #8b949e;
+    --mint: #3ddc97;
+    --mint-dunkel: #2bb87b;
+    --mint-schatten: rgba(61, 220, 151, .28);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(1200px 600px at 50% -10%, #14202b 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* margin: auto statt reiner Flex-Zentrierung, damit bei kleinen Fenstern
+     oben nichts abgeschnitten wird. */
+  .huelle {
+    width: 100%;
+    max-width: 420px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .karte {
+    background: var(--card);
+    border: 1px solid var(--card-rand);
+    border-radius: 22px;
+    padding: 30px 26px 26px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 1.45rem;
+    letter-spacing: -.01em;
+  }
+
+  h1 .tropfen { color: var(--mint); }
+
+  .untertitel {
+    margin: 6px 0 26px;
+    color: var(--text-leise);
+    font-size: .92rem;
+  }
+
+  .stand {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .zahl {
+    font-size: 4.4rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--mint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .von {
+    font-size: 1.3rem;
+    color: var(--text-leise);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .einheit {
+    color: var(--text-leise);
+    font-size: .9rem;
+    margin-bottom: 22px;
+  }
+
+  .balken {
+    height: 14px;
+    background: #0b0f14;
+    border: 1px solid var(--card-rand);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .balken-fuellung {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--mint-dunkel), var(--mint));
+    box-shadow: 0 0 14px var(--mint-schatten);
+    transition: width .35s ease;
+  }
+
+  .prozent {
+    margin: 10px 0 0;
+    font-size: .85rem;
+    color: var(--text-leise);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .menge {
+    margin: 4px 0 0;
+    font-size: .8rem;
+    color: var(--text-leise);
+    opacity: .8;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .glaeser {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    margin: 20px 0 24px;
+  }
+
+  .glas {
+    width: 13px;
+    height: 22px;
+    border: 2px solid var(--card-rand);
+    border-radius: 3px 3px 7px 7px;
+    transition: background .25s ease, border-color .25s ease;
+  }
+
+  .glas.voll {
+    background: var(--mint);
+    border-color: var(--mint);
+  }
+
+  .plus {
+    width: 108px;
+    height: 108px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--mint), var(--mint-dunkel));
+    color: #05130c;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 12px 30px var(--mint-schatten);
+    transition: transform .12s ease, box-shadow .2s ease;
+  }
+
+  .plus:hover:not(:disabled) { box-shadow: 0 14px 36px var(--mint-schatten); }
+  .plus:active:not(:disabled) { transform: scale(.94); }
+  .plus:disabled { opacity: .45; cursor: not-allowed; }
+  .plus:focus-visible { outline: 3px solid var(--mint); outline-offset: 4px; }
+
+  .neben-aktionen {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 22px;
+  }
+
+  .klein {
+    border: 1px solid var(--card-rand);
+    background: transparent;
+    color: var(--text-leise);
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: .85rem;
+    cursor: pointer;
+    transition: color .2s ease, border-color .2s ease;
+  }
+
+  .klein:hover:not(:disabled) { color: var(--text); border-color: #3a444f; }
+  .klein:disabled { opacity: .4; cursor: not-allowed; }
+  .klein:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
+
+  .schalter[aria-expanded="true"] {
+    color: var(--mint);
+    border-color: var(--mint-dunkel);
+  }
+
+  .einstellungen {
+    display: block;
+    margin-top: 16px;
+    padding: 16px 16px 12px;
+    background: #0f141a;
+    border: 1px solid var(--card-rand);
+    border-radius: 14px;
+    text-align: left;
+  }
+
+  /* Das hidden-Attribut muss die display-Angabe oben schlagen. */
+  .einstellungen[hidden] { display: none; }
+
+  .feld {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .feld + .feld { margin-top: 12px; }
+
+  .feld-name {
+    flex: 1;
+    font-size: .88rem;
+    color: var(--text);
+  }
+
+  .feld-einheit {
+    width: 52px;
+    font-size: .8rem;
+    color: var(--text-leise);
+  }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stepper-knopf {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border: 1px solid var(--card-rand);
+    border-radius: 50%;
+    background: var(--card);
+    color: var(--mint);
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color .2s ease, color .2s ease;
+  }
+
+  .stepper-knopf:hover:not(:disabled) { border-color: var(--mint-dunkel); }
+  .stepper-knopf:disabled { opacity: .35; cursor: not-allowed; }
+  .stepper-knopf:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
+
+  .stepper-feld {
+    width: 58px;
+    padding: 6px 4px;
+    border: 1px solid var(--card-rand);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: .9rem;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    -moz-appearance: textfield;
+  }
+
+  .stepper-feld::-webkit-outer-spin-button,
+  .stepper-feld::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .stepper-feld:focus {
+    outline: none;
+    border-color: var(--mint);
+    box-shadow: 0 0 0 3px var(--mint-schatten);
+  }
+
+  .feld-hinweis {
+    margin: 12px 0 0;
+    font-size: .8rem;
+    color: var(--text-leise);
+    opacity: .75;
+    line-height: 1.4;
+  }
+
+  .abschnitt {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--card-rand);
+  }
+
+  .abschnitt-titel {
+    margin: 0 0 12px;
+    font-size: .8rem;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-leise);
+  }
+
+  .schieber {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
+
+  .schieber input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .schieber-bahn {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    flex: none;
+    background: #0b0f14;
+    border: 1px solid var(--card-rand);
+    border-radius: 999px;
+    transition: background .2s ease, border-color .2s ease;
+  }
+
+  .schieber-bahn::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--text-leise);
+    transition: transform .2s ease, background .2s ease;
+  }
+
+  .schieber input:checked + .schieber-bahn {
+    background: var(--mint-dunkel);
+    border-color: var(--mint-dunkel);
+  }
+
+  .schieber input:checked + .schieber-bahn::after {
+    transform: translateX(20px);
+    background: #05130c;
+  }
+
+  .schieber input:focus-visible + .schieber-bahn {
+    outline: 2px solid var(--mint);
+    outline-offset: 2px;
+  }
+
+  .auswahl {
+    padding: 6px 10px;
+    border: 1px solid var(--card-rand);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: .9rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+
+  .auswahl:focus-visible {
+    outline: none;
+    border-color: var(--mint);
+    box-shadow: 0 0 0 3px var(--mint-schatten);
+  }
+
+  .zeitfenster {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .zeitfenster .auswahl { padding: 6px 7px; }
+
+  .zeitfenster-bis {
+    font-size: .8rem;
+    color: var(--text-leise);
+  }
+
+  /* Nur für Screenreader: sichtbar ist die Beschriftung "Zeitfenster" davor. */
+  .nur-vorlesen {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .woche {
+    background: var(--card);
+    border: 1px solid var(--card-rand);
+    border-radius: 22px;
+    padding: 20px 22px 18px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+  }
+
+  .woche-kopf {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .woche-titel {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 600;
+  }
+
+  .woche-spanne {
+    font-size: .8rem;
+    color: var(--text-leise);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Zwei Reihen mit gleicher Aufteilung: die Zielmarke kann so als eine
+     durchgehende Linie über alle Säulen liegen. */
+  .diagramm {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: 7px;
+    height: 108px;
+    margin-top: 20px;
+  }
+
+  .saeule {
+    position: relative;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: flex-end;
+    background: #0b0f14;
+    border: 1px solid var(--card-rand);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+
+  .saeule-fuellung {
+    width: 100%;
+    background: #38434f;
+    transition: height .35s ease;
+  }
+
+  .saeule.erreicht .saeule-fuellung {
+    background: linear-gradient(180deg, var(--mint), var(--mint-dunkel));
+    box-shadow: 0 0 12px var(--mint-schatten);
+  }
+
+  .saeule.heute { border-color: var(--mint-dunkel); }
+
+  /* Liegt über den Säulen, damit die Marke auch auf einem vollen Balken sichtbar
+     bleibt. Helle Striche, weil Mint auf Mint verschwinden würde. */
+  .ziel-linie {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    border-top: 1px dashed rgba(230, 237, 243, .55);
+    pointer-events: none;
+  }
+
+  .wochentage {
+    display: flex;
+    gap: 7px;
+    margin-top: 8px;
+  }
+
+  .wochentag {
+    flex: 1;
+    text-align: center;
+    font-size: .72rem;
+    color: var(--text-leise);
+  }
+
+  .wochentag.heute {
+    color: var(--mint);
+    font-weight: 600;
+  }
+
+  .woche-text {
+    margin: 16px 0 0;
+    font-size: .88rem;
+    color: var(--text-leise);
+  }
+
+  .woche-text strong {
+    color: var(--mint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .woche-fuss {
+    margin: 5px 0 0;
+    font-size: .8rem;
+    color: var(--text-leise);
+    opacity: .75;
+  }
+
+  .hinweis-karte {
+    background: var(--card);
+    border: 1px solid var(--card-rand);
+    border-radius: 22px;
+    padding: 18px 22px 16px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+  }
+
+  .hinweis-titel {
+    margin: 0 0 10px;
+    font-size: .8rem;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-leise);
+  }
+
+  /* Bewusst etwas größer und luftiger als die übrigen Fußtexte: der Hinweis
+     soll gelesen werden können, nicht bloß dastehen. */
+  .hinweis-karte p {
+    margin: 0 0 10px;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--text-leise);
+  }
+
+  .hinweis-karte p:last-child { margin-bottom: 0; }
+
+  .hinweis-karte strong { color: var(--text); font-weight: 600; }
+
+  .einwilligung {
+    margin: 0 0 14px;
+    font-size: .82rem;
+    line-height: 1.5;
+    color: var(--text-leise);
+  }
+
+  .seitenfuss {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding-bottom: 4px;
+    font-size: .8rem;
+    color: var(--text-leise);
+    opacity: .7;
+  }
+
+  .seitenfuss a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .seitenfuss a:hover { color: var(--text); text-decoration: underline; }
+  .seitenfuss a:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 4px; }
+
+  .hinweis {
+    margin: 22px 0 0;
+    min-height: 1.25em;
+    font-size: .9rem;
+    color: var(--text-leise);
+  }
+
+  .hinweis.geschafft { color: var(--mint); font-weight: 600; }
+
+  @media (max-width: 380px) {
+    .zahl { font-size: 3.6rem; }
+    .plus { width: 96px; height: 96px; font-size: 2.6rem; }
+  }
+
+  /* Auf schmalen Geräten passen Beschriftung und Bedienelement nicht mehr
+     nebeneinander. Dann rutscht das Element in die nächste Zeile, statt aus
+     dem Einstellungsfeld herauszuragen. */
+  @media (max-width: 420px) {
+    .feld { flex-wrap: wrap; row-gap: 9px; }
+    .feld-name { min-width: 110px; }
+    .einstellungen { padding: 16px 14px 12px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .balken-fuellung, .plus, .glas, .klein, .stepper-knopf,
+    .schieber-bahn, .schieber-bahn::after, .saeule-fuellung { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="huelle">
+  <main class="karte">
+    <h1><span class="tropfen">&#128167;</span> Trinkwecker</h1>
+    <p class="untertitel">Dein Wasser für heute</p>
+
+    <div class="stand">
+      <span class="zahl" id="zahl">0</span>
+      <span class="von">/ <span id="ziel">8</span></span>
+    </div>
+    <p class="einheit">Gläser à <span id="glasgroesse-text">250</span> ml</p>
+
+    <div class="balken" role="progressbar" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" aria-label="Fortschritt Tagesziel" id="balken">
+      <div class="balken-fuellung" id="fuellung"></div>
+    </div>
+    <p class="prozent" id="prozent">0 % vom Tagesziel</p>
+    <p class="menge" id="menge">0 von 2.000 ml</p>
+
+    <div class="glaeser" id="glaeser" aria-hidden="true"></div>
+
+    <button class="plus" id="plus" aria-label="Ein Glas Wasser hinzufügen">+</button>
+
+    <div class="neben-aktionen">
+      <button class="klein" id="minus">Ein Glas zurück</button>
+      <button class="klein" id="reset">Tag zurücksetzen</button>
+      <button class="klein schalter" id="schalter" aria-expanded="false" aria-controls="einstellungen">Einstellungen</button>
+    </div>
+
+    <div class="einstellungen" id="einstellungen" hidden>
+      <div class="feld">
+        <label class="feld-name" for="ziel-eingabe">Tagesziel</label>
+        <div class="stepper">
+          <button class="stepper-knopf" id="ziel-minus" type="button" aria-label="Tagesziel verringern">&minus;</button>
+          <input class="stepper-feld" id="ziel-eingabe" type="number" inputmode="numeric" min="4" max="20" step="1" value="8">
+          <button class="stepper-knopf" id="ziel-plus" type="button" aria-label="Tagesziel erhöhen">+</button>
+        </div>
+        <span class="feld-einheit">Gläser</span>
+      </div>
+
+      <div class="feld">
+        <label class="feld-name" for="ml-eingabe">Glasgröße</label>
+        <div class="stepper">
+          <button class="stepper-knopf" id="ml-minus" type="button" aria-label="Glasgröße verringern">&minus;</button>
+          <input class="stepper-feld" id="ml-eingabe" type="number" inputmode="numeric" min="100" max="1000" step="50" value="250">
+          <button class="stepper-knopf" id="ml-plus" type="button" aria-label="Glasgröße erhöhen">+</button>
+        </div>
+        <span class="feld-einheit">ml</span>
+      </div>
+
+      <p class="feld-hinweis">Tagesziel 4 bis 20 Gläser, Glasgröße 100 bis 1000 ml. Beides bleibt über den Tag hinaus gespeichert.</p>
+
+      <div class="abschnitt">
+        <p class="abschnitt-titel" id="erinnerungen-titel">Erinnerungen</p>
+
+        <p class="einwilligung" id="einwilligung">
+          Sobald du den Schalter umlegst, fragt dein Browser einmal nach der Erlaubnis für
+          Benachrichtigungen. Sie wird ausschließlich dafür genutzt, dich im gewählten
+          Zeitfenster ans Trinken zu erinnern. Nichts davon verlässt dein Gerät. Du kannst
+          die Erlaubnis jederzeit in den Browsereinstellungen widerrufen oder hier einfach
+          wieder ausschalten.
+        </p>
+
+        <div class="feld">
+          <label class="feld-name" for="erinnerung-an">Erinnerungen an</label>
+          <label class="schieber">
+            <input type="checkbox" id="erinnerung-an" aria-describedby="einwilligung">
+            <span class="schieber-bahn"></span>
+          </label>
+        </div>
+
+        <div class="feld">
+          <label class="feld-name" for="intervall">Intervall</label>
+          <select class="auswahl" id="intervall">
+            <option value="60">alle 60 Minuten</option>
+            <option value="90">alle 90 Minuten</option>
+            <option value="120">alle 120 Minuten</option>
+          </select>
+        </div>
+
+        <div class="feld">
+          <span class="feld-name" id="zeitfenster-name">Zeitfenster</span>
+          <div class="zeitfenster" role="group" aria-labelledby="zeitfenster-name">
+            <label class="nur-vorlesen" for="fenster-von">Von</label>
+            <select class="auswahl" id="fenster-von"></select>
+            <span class="zeitfenster-bis">bis</span>
+            <label class="nur-vorlesen" for="fenster-bis">Bis</label>
+            <select class="auswahl" id="fenster-bis"></select>
+          </div>
+        </div>
+
+        <p class="feld-hinweis" id="erinnerung-hinweis"></p>
+      </div>
+    </div>
+
+    <p class="hinweis" id="hinweis" role="status" aria-live="polite"></p>
+  </main>
+
+  <section class="woche" aria-labelledby="woche-titel">
+    <div class="woche-kopf">
+      <h2 class="woche-titel" id="woche-titel">Diese Woche</h2>
+      <span class="woche-spanne" id="woche-spanne"></span>
+    </div>
+
+    <div class="diagramm" id="diagramm"></div>
+    <div class="wochentage" id="wochentage"></div>
+
+    <p class="woche-text" id="woche-text"></p>
+    <p class="woche-fuss" id="woche-fuss"></p>
+  </section>
+
+  <section class="hinweis-karte" aria-labelledby="gesundheit-titel">
+    <h2 class="hinweis-titel" id="gesundheit-titel">Gesundheitshinweis</h2>
+    <p>
+      Der Trinkwecker zählt Gläser und erinnert ans Trinken. Mehr macht er nicht. Er
+      <strong>ersetzt keine medizinische Beratung</strong>, stellt keine Diagnose und
+      trifft keine Aussage über deinen Gesundheitszustand.
+    </p>
+    <p>
+      Die Voreinstellung von <strong>acht Gläsern ist nur ein Richtwert</strong>. Wie viel
+      für dich passt, hängt unter anderem von Alter, Körpergewicht, Bewegung, Wetter,
+      Ernährung und Medikamenten ab. Tagesziel und Glasgröße kannst du in den Einstellungen
+      jederzeit anpassen.
+    </p>
+    <p>
+      Bei <strong>Nieren- oder Herzerkrankungen</strong> und anderen Erkrankungen kann eine
+      bestimmte Trinkmenge vorgegeben oder begrenzt sein. Sprich die für dich richtige Menge
+      in diesem Fall mit deiner Ärztin oder deinem Arzt ab und richte dich nach dieser
+      Empfehlung, nicht nach der Voreinstellung dieser App.
+    </p>
+  </section>
+
+  <footer class="seitenfuss">
+    <a href="impressum.html">Impressum</a>
+    <span aria-hidden="true">·</span>
+    <a href="datenschutz.html">Datenschutz</a>
+  </footer>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  var SCHLUESSEL = "trinkwecker";
+  var VERLAUF_SCHLUESSEL = "trinkwecker_verlauf";
+  var VERLAUF_TAGE = 60; // Ältere Einträge fliegen beim Start raus.
+
+  var KUERZEL = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+  var WOCHENTAGE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+
+  var ZIEL_STANDARD = 8, ZIEL_MIN = 4, ZIEL_MAX = 20;
+  var ML_STANDARD = 250, ML_MIN = 100, ML_MAX = 1000, ML_SCHRITT = 50;
+  var STAND_MAX = 99;
+
+  // Zur Auswahl stehen 60, 90 und 120 Minuten. Erlaubt ist mehr, damit ein
+  // gespeicherter oder zum Testen gesetzter Wert nicht verworfen wird.
+  var INTERVALL_STANDARD = 60, INTERVALL_MIN = 1, INTERVALL_MAX = 1440;
+  var VON_STANDARD = 8, VON_MIN = 0, VON_MAX = 23;
+  var BIS_STANDARD = 20, BIS_MIN = 1, BIS_MAX = 24; // 24 heißt: bis Mitternacht.
+
+  var elZahl = document.getElementById("zahl");
+  var elZiel = document.getElementById("ziel");
+  var elBalken = document.getElementById("balken");
+  var elFuellung = document.getElementById("fuellung");
+  var elProzent = document.getElementById("prozent");
+  var elMenge = document.getElementById("menge");
+  var elGlasgroesseText = document.getElementById("glasgroesse-text");
+  var elGlaeser = document.getElementById("glaeser");
+  var elPlus = document.getElementById("plus");
+  var elMinus = document.getElementById("minus");
+  var elReset = document.getElementById("reset");
+  var elHinweis = document.getElementById("hinweis");
+  var elSchalter = document.getElementById("schalter");
+  var elPanel = document.getElementById("einstellungen");
+  var elZielEingabe = document.getElementById("ziel-eingabe");
+  var elZielMinus = document.getElementById("ziel-minus");
+  var elZielPlus = document.getElementById("ziel-plus");
+  var elMlEingabe = document.getElementById("ml-eingabe");
+  var elMlMinus = document.getElementById("ml-minus");
+  var elMlPlus = document.getElementById("ml-plus");
+  var elErinnerungAn = document.getElementById("erinnerung-an");
+  var elIntervall = document.getElementById("intervall");
+  var elVon = document.getElementById("fenster-von");
+  var elBis = document.getElementById("fenster-bis");
+  var elErinnerungHinweis = document.getElementById("erinnerung-hinweis");
+  var elDiagramm = document.getElementById("diagramm");
+  var elWochentage = document.getElementById("wochentage");
+  var elWocheSpanne = document.getElementById("woche-spanne");
+  var elWocheText = document.getElementById("woche-text");
+  var elWocheFuss = document.getElementById("woche-fuss");
+
+  var stand = 0;
+  var ziel = ZIEL_STANDARD;
+  var mlProGlas = ML_STANDARD;
+  var speicherGeht = true;
+
+  var erinnerungAn = false;
+  var intervall = INTERVALL_STANDARD;
+  var fensterVon = VON_STANDARD;
+  var fensterBis = BIS_STANDARD;
+  var verlauf = {};   // ISO-Datum -> getrunkene Gläser.
+  var naechste = 0;   // Zeitstempel der nächsten geplanten Meldung, 0 = keine.
+  var timer = null;
+  var statusText = "";  // Freundlicher Hinweis für die Statuszeile, sonst leer.
+
+  // Lokales Datum als YYYY-MM-DD, damit der Zähler zu Mitternacht neu startet.
+  function isoDatum(d) {
+    var m = String(d.getMonth() + 1).padStart(2, "0");
+    var t = String(d.getDate()).padStart(2, "0");
+    return d.getFullYear() + "-" + m + "-" + t;
+  }
+
+  function heute() {
+    return isoDatum(new Date());
+  }
+
+  // Fehlende, unlesbare oder unsinnige Werte fallen auf den Standard zurück,
+  // Zahlen außerhalb der Grenzen werden hineingeschoben statt verworfen.
+  function zahlOderStandard(wert, min, max, standard) {
+    if (wert === null || wert === undefined || wert === "" || typeof wert === "boolean") return standard;
+    var n = Number(wert);
+    if (!isFinite(n)) return standard;
+    return Math.max(min, Math.min(Math.round(n), max));
+  }
+
+  function erinnerungStandard() {
+    return {
+      an: false,
+      intervall: INTERVALL_STANDARD,
+      von: VON_STANDARD,
+      bis: BIS_STANDARD,
+      naechste: 0
+    };
+  }
+
+  function laden() {
+    var standardwerte = { stand: 0, ziel: ZIEL_STANDARD, ml: ML_STANDARD, erinnerung: erinnerungStandard() };
+    var roh;
+    try {
+      roh = localStorage.getItem(SCHLUESSEL);
+    } catch (e) {
+      // Privater Modus oder Speicher gesperrt: die App läuft weiter, nur ohne Merken.
+      speicherGeht = false;
+      return standardwerte;
+    }
+    if (!roh) return standardwerte;
+
+    var daten;
+    try {
+      daten = JSON.parse(roh);
+    } catch (e) {
+      return standardwerte; // Nur die Daten sind kaputt, der Speicher selbst geht.
+    }
+    if (!daten || typeof daten !== "object") return standardwerte;
+
+    var erinnerung = {
+      an: daten.erinnerungAn === true,
+      intervall: zahlOderStandard(daten.intervall, INTERVALL_MIN, INTERVALL_MAX, INTERVALL_STANDARD),
+      von: zahlOderStandard(daten.fensterVon, VON_MIN, VON_MAX, VON_STANDARD),
+      bis: zahlOderStandard(daten.fensterBis, BIS_MIN, BIS_MAX, BIS_STANDARD),
+      naechste: zahlOderStandard(daten.naechste, 0, 8.64e15, 0)
+    };
+    // Ein Fenster ohne Länge wäre eine Dauersperre: dann lieber die Standardzeiten.
+    if (erinnerung.von >= erinnerung.bis) {
+      erinnerung.von = VON_STANDARD;
+      erinnerung.bis = BIS_STANDARD;
+    }
+
+    return {
+      // Die Einstellungen gelten dauerhaft, der Zähler nur für den heutigen Tag.
+      ziel: zahlOderStandard(daten.ziel, ZIEL_MIN, ZIEL_MAX, ZIEL_STANDARD),
+      ml: zahlOderStandard(daten.mlProGlas, ML_MIN, ML_MAX, ML_STANDARD),
+      stand: daten.datum === heute() ? zahlOderStandard(daten.glaeser, 0, STAND_MAX, 0) : 0,
+      erinnerung: erinnerung
+    };
+  }
+
+  function uebernehmen() {
+    var daten = laden();
+    stand = daten.stand;
+    ziel = daten.ziel;
+    mlProGlas = daten.ml;
+    erinnerungAn = daten.erinnerung.an;
+    intervall = daten.erinnerung.intervall;
+    fensterVon = daten.erinnerung.von;
+    fensterBis = daten.erinnerung.bis;
+    naechste = daten.erinnerung.naechste;
+    verlauf = verlaufLaden();
+  }
+
+  function speichern() {
+    if (!speicherGeht) return;
+    try {
+      // Vorhandenen Datensatz einlesen und nur die eigenen Felder überschreiben,
+      // damit unbekannte Felder aus anderen Versionen erhalten bleiben.
+      var datensatz = {};
+      try {
+        var roh = localStorage.getItem(SCHLUESSEL);
+        if (roh) {
+          var alt = JSON.parse(roh);
+          if (alt && typeof alt === "object") datensatz = alt;
+        }
+      } catch (e) {
+        datensatz = {}; // Unlesbarer Altstand wird ersetzt.
+      }
+      datensatz.datum = heute();
+      datensatz.glaeser = stand;
+      datensatz.ziel = ziel;
+      datensatz.mlProGlas = mlProGlas;
+      datensatz.erinnerungAn = erinnerungAn;
+      datensatz.intervall = intervall;
+      datensatz.fensterVon = fensterVon;
+      datensatz.fensterBis = fensterBis;
+      datensatz.naechste = naechste;
+      localStorage.setItem(SCHLUESSEL, JSON.stringify(datensatz));
+    } catch (e) {
+      speicherGeht = false;
+    }
+  }
+
+  // ----- Verlauf ------------------------------------------------------------
+
+  function istDatum(text) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(text);
+  }
+
+  function verlaufLaden() {
+    var roh;
+    try {
+      roh = localStorage.getItem(VERLAUF_SCHLUESSEL);
+    } catch (e) {
+      speicherGeht = false;
+      return {};
+    }
+    if (!roh) return {};
+
+    var daten;
+    try {
+      daten = JSON.parse(roh);
+    } catch (e) {
+      return {};
+    }
+    if (!daten || typeof daten !== "object" || Array.isArray(daten)) return {};
+
+    // Nur echte Datumsschlüssel mit brauchbaren Zahlen übernehmen.
+    var sauber = {};
+    Object.keys(daten).forEach(function (tag) {
+      if (!istDatum(tag)) return;
+      var wert = zahlOderStandard(daten[tag], 0, STAND_MAX, -1);
+      if (wert >= 0) sauber[tag] = wert;
+    });
+    return sauber;
+  }
+
+  function verlaufSpeichern() {
+    if (!speicherGeht) return;
+    try {
+      localStorage.setItem(VERLAUF_SCHLUESSEL, JSON.stringify(verlauf));
+    } catch (e) {
+      speicherGeht = false;
+    }
+  }
+
+  // ISO-Daten lassen sich als Text vergleichen, das spart das Umrechnen.
+  function verlaufAufraeumen() {
+    var grenze = new Date();
+    grenze.setHours(0, 0, 0, 0);
+    grenze.setDate(grenze.getDate() - VERLAUF_TAGE);
+    var aeltesteErlaubt = isoDatum(grenze);
+
+    var geloescht = false;
+    Object.keys(verlauf).forEach(function (tag) {
+      if (tag < aeltesteErlaubt) {
+        delete verlauf[tag];
+        geloescht = true;
+      }
+    });
+    return geloescht;
+  }
+
+  function verlaufMerken() {
+    verlauf[heute()] = stand;
+    verlaufSpeichern();
+  }
+
+  function nf(n) {
+    try {
+      return n.toLocaleString("de-AT");
+    } catch (e) {
+      return String(n);
+    }
+  }
+
+  function glaeserZeichnen() {
+    elGlaeser.textContent = "";
+    for (var i = 0; i < ziel; i++) {
+      var glas = document.createElement("span");
+      glas.className = "glas" + (i < stand ? " voll" : "");
+      elGlaeser.appendChild(glas);
+    }
+  }
+
+  // Das Panel spiegelt den Zustand, überschreibt aber kein Feld, in dem gerade getippt wird.
+  function panelZeichnen() {
+    if (document.activeElement !== elZielEingabe) elZielEingabe.value = String(ziel);
+    if (document.activeElement !== elMlEingabe) elMlEingabe.value = String(mlProGlas);
+    elZielMinus.disabled = ziel <= ZIEL_MIN;
+    elZielPlus.disabled = ziel >= ZIEL_MAX;
+    elMlMinus.disabled = mlProGlas <= ML_MIN;
+    elMlPlus.disabled = mlProGlas >= ML_MAX;
+  }
+
+  // ----- Wochenansicht ------------------------------------------------------
+
+  function kurzDatum(d) {
+    return d.getDate() + "." + (d.getMonth() + 1) + ".";
+  }
+
+  // Montag der Woche, in der das übergebene Datum liegt.
+  function wochenStart(d) {
+    var start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+    return start;
+  }
+
+  function wocheSammeln() {
+    var heuteText = heute();
+    var start = wochenStart(new Date());
+    var tage = [];
+
+    for (var i = 0; i < 7; i++) {
+      var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      var tag = isoDatum(d);
+      var istHeute = tag === heuteText;
+      // Der heutige Wert kommt live aus dem Zähler, der Rest aus dem Verlauf.
+      var vorhanden = istHeute || Object.prototype.hasOwnProperty.call(verlauf, tag);
+      tage.push({
+        datum: d,
+        tag: tag,
+        wert: istHeute ? stand : (vorhanden ? verlauf[tag] : 0),
+        vorhanden: vorhanden,
+        heute: istHeute
+      });
+    }
+    return tage;
+  }
+
+  function wocheZeichnen() {
+    var tage = wocheSammeln();
+    var hoechster = 0;
+    var erreicht = 0;
+    tage.forEach(function (t) {
+      if (t.wert > hoechster) hoechster = t.wert;
+      if (t.wert >= ziel) erreicht++;
+    });
+    // Etwas Luft nach oben, damit die Zielmarke nicht am Rand klebt.
+    var skala = Math.max(ziel, hoechster) * 1.1;
+
+    elDiagramm.textContent = "";
+    elWochentage.textContent = "";
+
+    var linie = document.createElement("div");
+    linie.className = "ziel-linie";
+    linie.style.bottom = (ziel / skala * 100) + "%";
+    elDiagramm.appendChild(linie);
+
+    tage.forEach(function (t, i) {
+      var saeule = document.createElement("div");
+      saeule.className = "saeule" +
+        (t.wert >= ziel ? " erreicht" : "") +
+        (t.heute ? " heute" : "");
+      saeule.setAttribute("role", "img");
+      saeule.setAttribute("aria-label", WOCHENTAGE[i] + ", " + kurzDatum(t.datum) + ": " +
+        (t.vorhanden ? t.wert + " von " + ziel + " Gläsern" : "kein Eintrag"));
+
+      // Fehlende Tage haben Höhe 0 und bleiben damit ein leerer Balken.
+      var fuellung = document.createElement("div");
+      fuellung.className = "saeule-fuellung";
+      fuellung.style.height = (Math.min(t.wert / skala, 1) * 100) + "%";
+      saeule.appendChild(fuellung);
+      elDiagramm.appendChild(saeule);
+
+      var kuerzel = document.createElement("span");
+      kuerzel.className = "wochentag" + (t.heute ? " heute" : "");
+      kuerzel.textContent = KUERZEL[i];
+      elWochentage.appendChild(kuerzel);
+    });
+
+    elWocheSpanne.textContent = kurzDatum(tage[0].datum) + " bis " + kurzDatum(tage[6].datum);
+
+    elWocheText.textContent = "";
+    var zahl = document.createElement("strong");
+    zahl.textContent = String(erreicht);
+    elWocheText.appendChild(zahl);
+    elWocheText.appendChild(document.createTextNode(" von 7 Tagen Ziel erreicht"));
+
+    elWocheFuss.textContent = "Gestrichelt: Tagesziel von " + ziel + " Gläsern. Gespeichert werden die letzten " +
+      VERLAUF_TAGE + " Tage.";
+  }
+
+  // ----- Erinnerungen -------------------------------------------------------
+
+  function zweistellig(n) { return (n < 10 ? "0" : "") + n; }
+  function uhrzeit(h) { return zweistellig(h) + ":00"; }
+  function intervallText(minuten) { return minuten === 1 ? "jede Minute" : "alle " + minuten + " Minuten"; }
+
+  function stundenFuellen(feld, von, bis) {
+    for (var h = von; h <= bis; h++) {
+      var eintrag = document.createElement("option");
+      eintrag.value = String(h);
+      eintrag.textContent = uhrzeit(h);
+      feld.appendChild(eintrag);
+    }
+  }
+
+  function meldungenMoeglich() {
+    return typeof window.Notification === "function";
+  }
+
+  function rechte() {
+    try {
+      return window.Notification.permission;
+    } catch (e) {
+      return "denied";
+    }
+  }
+
+  function fensterOffen(d) {
+    var h = d.getHours();
+    return h >= fensterVon && h < fensterBis;
+  }
+
+  // Beginn des nächsten Fensters nach dem übergebenen Zeitpunkt.
+  function naechsteOeffnung(d) {
+    var start = new Date(d.getTime());
+    start.setHours(fensterVon, 0, 0, 0);
+    if (start.getTime() <= d.getTime()) start.setDate(start.getDate() + 1);
+    return start.getTime();
+  }
+
+  function naechsterZeitpunkt() {
+    var zeitpunkt = Date.now() + intervall * 60000;
+    // Fällt der nächste Termin aus dem Fenster, rutscht er auf dessen Beginn.
+    return fensterOffen(new Date(zeitpunkt)) ? zeitpunkt : naechsteOeffnung(new Date(zeitpunkt));
+  }
+
+  function timerStoppen() {
+    if (timer !== null) {
+      window.clearTimeout(timer);
+      timer = null;
+    }
+  }
+
+  // Kette aus einzelnen setTimeout-Schritten: jede Meldung plant die nächste.
+  function planen(zeitpunkt) {
+    timerStoppen();
+    naechste = zeitpunkt || naechsterZeitpunkt();
+    speichern();
+    timer = window.setTimeout(ausloesen, Math.max(0, naechste - Date.now()));
+  }
+
+  function ausloesen() {
+    timer = null;
+    if (!erinnerungAn) return;
+    // Still bleiben, wenn das Tagesziel schon steht oder das Fenster gerade zu ist.
+    if (stand < ziel && fensterOffen(new Date()) && !melden()) return;
+    planen();
+    zeichnen();
+  }
+
+  function melden() {
+    var offen = ziel - stand;
+    try {
+      new window.Notification("Zeit für ein Glas Wasser", {
+        body: "Noch " + offen + (offen === 1 ? " Glas" : " Gläser") + " bis zum Tagesziel.",
+        tag: "trinkwecker",
+        lang: "de"
+      });
+      return true;
+    } catch (e) {
+      // Manche Browser erlauben Meldungen nur aus einem Service Worker heraus.
+      ausschalten("Dein Browser zeigt Erinnerungen nur in einer installierten App an. Der Zähler läuft normal weiter.");
+      return false;
+    }
+  }
+
+  function ausschalten(text) {
+    erinnerungAn = false;
+    naechste = 0;
+    timerStoppen();
+    statusText = text || "";
+    speichern();
+    zeichnen();
+  }
+
+  function anschalten() {
+    erinnerungAn = true;
+    statusText = "";
+    planen();
+    zeichnen();
+  }
+
+  // Die Berechtigung wird ausschließlich hier erfragt, also direkt aus dem
+  // Klick auf den Schalter heraus. Beim Laden der Seite passiert nichts.
+  function einschalten() {
+    if (!meldungenMoeglich()) {
+      ausschalten("Dieser Browser kann keine Erinnerungen anzeigen. Der Zähler funktioniert wie gewohnt weiter.");
+      return;
+    }
+    if (rechte() === "granted") {
+      anschalten();
+      return;
+    }
+    if (rechte() === "denied") {
+      ausschalten("Erinnerungen sind für diese Seite blockiert. In den Browser-Einstellungen lassen sie sich wieder erlauben.");
+      return;
+    }
+
+    var erledigt = false;
+    function antwort(erlaubnis) {
+      if (erledigt) return; // Ältere Browser melden sich per Callback und per Promise.
+      erledigt = true;
+      if (erlaubnis === "granted") anschalten();
+      else if (erlaubnis === "denied") ausschalten("Ohne Erlaubnis bleibt es still. Du kannst sie jederzeit wieder erteilen.");
+      else ausschalten(""); // Dialog weggeklickt: einfach wieder aus, ohne Belehrung.
+    }
+
+    var ergebnis;
+    try {
+      ergebnis = window.Notification.requestPermission(antwort);
+    } catch (e) {
+      ausschalten("Dieser Browser fragt nicht nach der Erlaubnis für Erinnerungen. Der Zähler funktioniert wie gewohnt weiter.");
+      return;
+    }
+    if (ergebnis && typeof ergebnis.then === "function") {
+      ergebnis.then(antwort, function () { antwort("denied"); });
+    }
+  }
+
+  // Nach Laden, Tabwechsel oder Änderung in einem anderen Tab: Timer und
+  // gespeicherter Zustand wieder in Einklang bringen.
+  function erinnerungSynchronisieren() {
+    if (!erinnerungAn) {
+      timerStoppen();
+      return;
+    }
+    if (!meldungenMoeglich() || rechte() !== "granted") {
+      ausschalten("Erinnerungen sind gerade nicht erlaubt. Schalte sie bei Bedarf einfach wieder ein.");
+      return;
+    }
+    if (timer !== null) return; // Läuft schon.
+    // Ein gespeicherter Termin überlebt den Reload, damit häufiges Neuladen die
+    // Kette nicht endlos verschiebt. Alles Unplausible wird neu geplant.
+    var rest = naechste - Date.now();
+    planen(rest > 0 && rest <= intervall * 60000 ? naechste : 0);
+  }
+
+  function erinnerungZeichnen() {
+    elErinnerungAn.checked = erinnerungAn;
+
+    // Ein gespeicherter Wert außerhalb der drei Vorgaben bekommt einen eigenen
+    // Eintrag, damit die Auswahl nicht leer aussieht.
+    if (document.activeElement !== elIntervall) {
+      var text = String(intervall);
+      elIntervall.value = text;
+      if (elIntervall.value !== text) {
+        var eintrag = document.createElement("option");
+        eintrag.value = text;
+        eintrag.textContent = intervallText(intervall);
+        elIntervall.appendChild(eintrag);
+        elIntervall.value = text;
+      }
+    }
+    if (document.activeElement !== elVon) elVon.value = String(fensterVon);
+    if (document.activeElement !== elBis) elBis.value = String(fensterBis);
+
+    if (!meldungenMoeglich()) {
+      elErinnerungHinweis.textContent = "Dieser Browser kann keine Erinnerungen anzeigen.";
+    } else if (!erinnerungAn) {
+      // Das Warum steht schon über dem Schalter, hier genügt der Zustand.
+      elErinnerungHinweis.textContent = "Erinnerungen sind zurzeit aus.";
+    } else {
+      var satz = "Aktiv: " + intervallText(intervall) + " zwischen " + uhrzeit(fensterVon) + " und " + uhrzeit(fensterBis) + " Uhr.";
+      if (naechste > Date.now()) {
+        var d = new Date(naechste);
+        satz += " Nächste Erinnerung um " + zweistellig(d.getHours()) + ":" + zweistellig(d.getMinutes()) + " Uhr.";
+      }
+      if (stand >= ziel) satz += " Tagesziel steht, bis morgen bleibt es still.";
+      elErinnerungHinweis.textContent = satz;
+    }
+  }
+
+  function zeichnen() {
+    var prozent = Math.round(Math.min(stand / ziel, 1) * 100);
+
+    elZahl.textContent = String(stand);
+    elZiel.textContent = String(ziel);
+    elGlasgroesseText.textContent = String(mlProGlas);
+    elFuellung.style.width = prozent + "%";
+    elProzent.textContent = prozent + " % vom Tagesziel";
+    elMenge.textContent = nf(stand * mlProGlas) + " von " + nf(ziel * mlProGlas) + " ml";
+    elBalken.setAttribute("aria-valuemax", String(ziel));
+    elBalken.setAttribute("aria-valuenow", String(Math.min(stand, ziel)));
+    elMinus.disabled = stand === 0;
+    elPlus.disabled = stand >= STAND_MAX;
+    glaeserZeichnen();
+    panelZeichnen();
+    erinnerungZeichnen();
+    wocheZeichnen();
+
+    var offen = ziel - stand;
+    if (stand === 0) {
+      elHinweis.textContent = "Auf geht's, das erste Glas wartet.";
+      elHinweis.className = "hinweis";
+    } else if (offen > 1) {
+      elHinweis.textContent = "Noch " + offen + " Gläser bis zum Ziel.";
+      elHinweis.className = "hinweis";
+    } else if (offen === 1) {
+      elHinweis.textContent = "Nur noch ein Glas, fast geschafft.";
+      elHinweis.className = "hinweis";
+    } else if (stand === ziel) {
+      elHinweis.textContent = "Tagesziel geschafft, super gemacht!";
+      elHinweis.className = "hinweis geschafft";
+    } else {
+      var extra = stand - ziel;
+      elHinweis.textContent = "Ziel übertroffen: " + extra + (extra === 1 ? " Glas" : " Gläser") + " extra.";
+      elHinweis.className = "hinweis geschafft";
+    }
+
+    if (!speicherGeht) {
+      elHinweis.textContent += " (Speichern im Browser ist nicht möglich.)";
+    }
+    // Alles rund um Erinnerungen bleibt ein freundlicher Zusatz, keine Fehlermeldung.
+    if (statusText) {
+      elHinweis.textContent += " " + statusText;
+    }
+  }
+
+  function setzen(neu) {
+    stand = Math.max(0, Math.min(neu, STAND_MAX));
+    speichern();
+    verlaufMerken();
+    zeichnen();
+  }
+
+  // Ein Ziel unter dem aktuellen Stand ist erlaubt: das Getrunkene bleibt stehen,
+  // Balken und Symbole laufen dann einfach am Anschlag.
+  function zielSetzen(neu) {
+    ziel = zahlOderStandard(neu, ZIEL_MIN, ZIEL_MAX, ZIEL_STANDARD);
+    speichern();
+    zeichnen();
+  }
+
+  function mlSetzen(neu) {
+    mlProGlas = zahlOderStandard(neu, ML_MIN, ML_MAX, ML_STANDARD);
+    speichern();
+    zeichnen();
+  }
+
+  // Plus und Minus rasten auf das Schrittraster ein, auch bei krummen Zwischenwerten.
+  function raste(wert, schritt, richtung) {
+    return richtung > 0
+      ? Math.floor(wert / schritt) * schritt + schritt
+      : Math.ceil(wert / schritt) * schritt - schritt;
+  }
+
+  elPlus.addEventListener("click", function () { setzen(stand + 1); });
+  elMinus.addEventListener("click", function () { setzen(stand - 1); });
+  elReset.addEventListener("click", function () {
+    if (stand === 0 || window.confirm("Zähler für heute auf 0 zurücksetzen?")) setzen(0);
+  });
+
+  elSchalter.addEventListener("click", function () {
+    var offen = elPanel.hidden;
+    elPanel.hidden = !offen;
+    elSchalter.setAttribute("aria-expanded", offen ? "true" : "false");
+  });
+
+  elZielMinus.addEventListener("click", function () { zielSetzen(raste(ziel, 1, -1)); });
+  elZielPlus.addEventListener("click", function () { zielSetzen(raste(ziel, 1, 1)); });
+  elMlMinus.addEventListener("click", function () { mlSetzen(raste(mlProGlas, ML_SCHRITT, -1)); });
+  elMlPlus.addEventListener("click", function () { mlSetzen(raste(mlProGlas, ML_SCHRITT, 1)); });
+
+  // Beim Tippen nur übernehmen, was schon im gültigen Bereich liegt, damit eine
+  // halb eingegebene Zahl nicht sofort zurechtgebogen wird. Der Rest folgt beim Verlassen.
+  function tippen(feld, min, max, anwenden) {
+    feld.addEventListener("input", function () {
+      var n = Number(feld.value);
+      if (feld.value !== "" && isFinite(n) && n >= min && n <= max && n === Math.round(n)) anwenden(n);
+    });
+    feld.addEventListener("change", function () { anwenden(feld.value); });
+    feld.addEventListener("blur", function () { anwenden(feld.value); });
+  }
+
+  tippen(elZielEingabe, ZIEL_MIN, ZIEL_MAX, zielSetzen);
+  tippen(elMlEingabe, ML_MIN, ML_MAX, mlSetzen);
+
+  elErinnerungAn.addEventListener("change", function () {
+    if (elErinnerungAn.checked) einschalten();
+    else ausschalten("");
+  });
+
+  // Geänderte Zeiten starten die Kette neu, damit der neue Takt sofort gilt.
+  function erinnerungGeaendert() {
+    if (erinnerungAn) planen();
+    else { naechste = 0; speichern(); }
+    zeichnen();
+  }
+
+  elIntervall.addEventListener("change", function () {
+    intervall = zahlOderStandard(elIntervall.value, INTERVALL_MIN, INTERVALL_MAX, INTERVALL_STANDARD);
+    erinnerungGeaendert();
+  });
+
+  elVon.addEventListener("change", function () {
+    fensterVon = zahlOderStandard(elVon.value, VON_MIN, VON_MAX, VON_STANDARD);
+    if (fensterBis <= fensterVon) fensterBis = fensterVon + 1; // Mindestens eine Stunde Fenster.
+    erinnerungGeaendert();
+  });
+
+  elBis.addEventListener("change", function () {
+    fensterBis = zahlOderStandard(elBis.value, BIS_MIN, BIS_MAX, BIS_STANDARD);
+    if (fensterVon >= fensterBis) fensterVon = fensterBis - 1;
+    erinnerungGeaendert();
+  });
+
+  // Tab lag über Mitternacht offen oder wurde in einem anderen Tab geändert.
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) { uebernehmen(); erinnerungSynchronisieren(); zeichnen(); }
+  });
+  window.addEventListener("storage", function (e) {
+    if (e.key === SCHLUESSEL || e.key === VERLAUF_SCHLUESSEL) {
+      uebernehmen();
+      erinnerungSynchronisieren();
+      zeichnen();
+    }
+  });
+
+  elZielEingabe.min = String(ZIEL_MIN);
+  elZielEingabe.max = String(ZIEL_MAX);
+  elMlEingabe.min = String(ML_MIN);
+  elMlEingabe.max = String(ML_MAX);
+  elMlEingabe.step = String(ML_SCHRITT);
+  stundenFuellen(elVon, VON_MIN, VON_MAX);
+  stundenFuellen(elBis, BIS_MIN, BIS_MAX);
+
+  uebernehmen();
+  if (verlaufAufraeumen()) verlaufSpeichern();
+  erinnerungSynchronisieren();
+  zeichnen();
+})();
+</script>
+
+<script>
+// Service Worker, damit die App installierbar ist und offline startet.
+// Ohne Unterstützung, etwa bei direkt geöffneter Datei, passiert einfach nichts.
+(function () {
+  "use strict";
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", function () {
+    // Steuert schon einer? Dann ist ein späterer Wechsel eine neue Fassung.
+    var hatteSteuerung = !!navigator.serviceWorker.controller;
+    var neuGeladen = false;
+
+    navigator.serviceWorker.addEventListener("controllerchange", function () {
+      if (!hatteSteuerung || neuGeladen) return;
+      neuGeladen = true; // Nur einmal, sonst dreht sich die Seite im Kreis.
+      window.location.reload();
+    });
+
+    navigator.serviceWorker.register("./sw.js").catch(function () {
+      // Kein Service Worker, kein Problem: die App läuft auch ohne ihn.
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+name: GitHub Pages
+
+# Jeder Push auf main veröffentlicht den Ordner so, wie er im Repository liegt.
+# Über den Reiter Actions lässt sich der Lauf auch von Hand anstoßen.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Nur so viele Rechte wie nötig: lesen, auf Pages schreiben, Token ausstellen.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Immer nur eine Veröffentlichung gleichzeitig. Laufende Deployments werden
+# nicht abgebrochen, sonst bleibt die Seite womöglich halb aktualisiert zurück.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  veroeffentlichen:
+    name: Statische Seite veröffentlichen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Quelltext holen
+        uses: actions/checkout@v4
+
+      - name: Pages vorbereiten
+        uses: actions/configure-pages@v5
+
+      - name: Projektordner packen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Das Wurzelverzeichnis selbst. Es gibt nichts zu bauen und nichts zu
+          # installieren, die Dateien gehen unverändert online. Die Ordner .git
+          # und .github lässt die Action von sich aus weg.
+          path: .
+
+      - name: Auf GitHub Pages veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4

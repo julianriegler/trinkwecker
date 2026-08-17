@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Datenschutzerklärung des Trinkweckers: alle Trinkdaten bleiben lokal im Browser.">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='27' font-size='27'>&#128167;</text></svg>">
+<meta name="robots" content="noindex">
+<title>Datenschutz · Trinkwecker</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --card-rand: #232a33;
+    --text: #e6edf3;
+    --text-leise: #8b949e;
+    --mint: #3ddc97;
+    --mint-dunkel: #2bb87b;
+    --mint-schatten: rgba(61, 220, 151, .28);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(1200px 600px at 50% -10%, #14202b 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .huelle {
+    width: 100%;
+    max-width: 480px;
+    margin: auto;
+  }
+
+  .karte {
+    background: var(--card);
+    border: 1px solid var(--card-rand);
+    border-radius: 22px;
+    padding: 26px 26px 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+  }
+
+  .zurueck {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 15px;
+    border: 1px solid var(--card-rand);
+    border-radius: 999px;
+    color: var(--text-leise);
+    font-size: .85rem;
+    text-decoration: none;
+    transition: color .2s ease, border-color .2s ease;
+  }
+
+  .zurueck:hover { color: var(--text); border-color: #3a444f; }
+  .zurueck:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.45rem;
+    letter-spacing: -.01em;
+  }
+
+  .untertitel {
+    margin: 0 0 20px;
+    color: var(--text-leise);
+    font-size: .85rem;
+  }
+
+  h2 {
+    margin: 26px 0 8px;
+    font-size: .95rem;
+    color: var(--mint);
+  }
+
+  p, li {
+    margin: 0 0 10px;
+    font-size: .9rem;
+    line-height: 1.6;
+    color: var(--text-leise);
+  }
+
+  ul {
+    margin: 0 0 12px;
+    padding-left: 20px;
+  }
+
+  li { margin-bottom: 6px; }
+
+  strong { color: var(--text); font-weight: 600; }
+
+  a { color: var(--mint); }
+
+  .kurz {
+    margin: 0 0 6px;
+    padding: 14px 16px;
+    background: #0f141a;
+    border: 1px solid var(--card-rand);
+    border-left: 3px solid var(--mint);
+    border-radius: 12px;
+    font-size: .9rem;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .merker {
+    margin: 0 0 6px;
+    padding: 13px 15px;
+    background: #0f141a;
+    border: 1px dashed var(--mint-dunkel);
+    border-radius: 12px;
+    font-size: .85rem;
+    line-height: 1.55;
+    color: var(--text-leise);
+  }
+
+  /* Jeder noch auszufüllende Wert steckt in einem solchen Feld. */
+  .platzhalter {
+    display: inline-block;
+    padding: 1px 7px;
+    background: #0f141a;
+    border: 1px dashed var(--mint-dunkel);
+    border-radius: 6px;
+    color: var(--mint);
+    font-size: .92em;
+  }
+
+  .bedingt {
+    margin: -4px 0 12px;
+    font-size: .78rem;
+    opacity: .8;
+  }
+
+  .stand {
+    margin: 18px 0 0;
+    font-size: .78rem;
+    opacity: .8;
+  }
+
+  .fuss {
+    margin-top: 26px;
+    padding-top: 16px;
+    border-top: 1px solid var(--card-rand);
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    font-size: .8rem;
+    color: var(--text-leise);
+  }
+
+  .fuss a { color: inherit; text-decoration: none; }
+  .fuss a:hover { color: var(--text); text-decoration: underline; }
+  .fuss a:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .zurueck { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="huelle">
+    <main class="karte">
+      <a class="zurueck" href="index.html">&#8592; Zurück zum Trinkwecker</a>
+
+      <h1>Datenschutz</h1>
+      <p class="untertitel">
+        Informationen nach der Datenschutz-Grundverordnung (DSGVO), in einfacher Sprache.
+      </p>
+
+      <p class="kurz">
+        <strong>Kurz gesagt:</strong> Alles, was du im Trinkwecker einträgst, bleibt auf deinem
+        Gerät. Es gibt kein Konto, keine Anmeldung und keine Übertragung deiner Trinkdaten an
+        einen Server. Wir sehen weder, wie viel du trinkst, noch ob du die App überhaupt
+        benutzt.
+      </p>
+
+      <p class="merker">
+        <strong>Vor der Veröffentlichung ausfüllen:</strong> Die grün umrandeten Felder in
+        eckigen Klammern sind Platzhalter und müssen durch die echten Angaben ersetzt werden.
+      </p>
+
+      <h2>Wer ist verantwortlich</h2>
+      <p>
+        Verantwortlich im Sinne der DSGVO ist
+        <span class="platzhalter">[Vor- und Nachname oder Firmenwortlaut]</span>,
+        <span class="platzhalter">[Straße und Hausnummer]</span>,
+        <span class="platzhalter">[PLZ und Ort]</span>,
+        <span class="platzhalter">[Land]</span>.
+        Kontakt für Datenschutzfragen:
+        <span class="platzhalter">[E-Mail-Adresse]</span>.
+        Die vollständigen Angaben stehen im <a href="impressum.html">Impressum</a>.
+      </p>
+      <p>
+        <span class="platzhalter">[Ein Datenschutzbeauftragter ist nicht bestellt, weil dazu
+        keine Pflicht besteht.]</span>
+      </p>
+      <p class="bedingt">
+        Falls doch eine Person bestellt ist, hier Name und Kontaktdaten eintragen.
+      </p>
+
+      <h2>Deine Trinkdaten bleiben auf deinem Gerät</h2>
+      <p>
+        Der Trinkwecker speichert alles im sogenannten localStorage. Das ist ein kleiner
+        Speicher, den dein Browser selbst verwaltet. Diese Daten verlassen dein Gerät nicht.
+        Gespeichert wird:
+      </p>
+      <ul>
+        <li>unter dem Namen <strong>trinkwecker</strong>: das heutige Datum, die Zahl der
+          getrunkenen Gläser, dein Tagesziel, die Glasgröße sowie die Einstellungen für
+          Erinnerungen;</li>
+        <li>unter dem Namen <strong>trinkwecker_verlauf</strong>: pro Tag ein Datum und die
+          Zahl der Gläser, für die Wochenansicht. Einträge, die älter als 60 Tage sind, löscht
+          die App beim Start automatisch.</li>
+      </ul>
+      <p>
+        Es gibt keine Benutzerkonten, keine Cookies, keine Werbung, keine Analyse-Werkzeuge und
+        keine Weitergabe an Dritte. Die App lädt auch keine Schriften, Skripte oder Bilder von
+        fremden Servern nach.
+      </p>
+      <p>
+        <strong>Löschen kannst du jederzeit selbst:</strong> Der Knopf „Tag zurücksetzen“ setzt
+        den heutigen Zähler auf null. Wer alles loswerden will, löscht in den Browsereinstellungen
+        die Website-Daten für diese Seite. Danach ist nichts mehr gespeichert. Da wir keinen
+        Zugriff auf diese Daten haben, können wir sie weder einsehen noch für dich löschen.
+      </p>
+      <p>
+        Eine Einwilligung brauchen wir dafür nicht, weil dieser Speicher für die gewünschte
+        Funktion unbedingt erforderlich ist. Er dient allein dazu, deinen Zählerstand über einen
+        Seitenaufruf hinaus zu behalten.
+      </p>
+
+      <h2>Was der Hoster in seinen Logdateien sieht</h2>
+      <p>
+        Damit die Seite überhaupt in deinem Browser landet, muss sie von einem Server geladen
+        werden. Dabei fallen wie bei jedem Aufruf im Web technische Zugriffsdaten an, die unser
+        Hoster kurzzeitig protokolliert:
+      </p>
+      <ul>
+        <li>deine IP-Adresse,</li>
+        <li>Datum und Uhrzeit des Aufrufs,</li>
+        <li>die abgerufene Datei und die übertragene Datenmenge,</li>
+        <li>die Seite, von der du gekommen bist (Referrer), sofern der Browser sie sendet,</li>
+        <li>Browser, Version und Betriebssystem (User-Agent).</li>
+      </ul>
+      <p>
+        Diese Daten dienen ausschließlich dem sicheren und störungsfreien Betrieb, also der
+        Auslieferung der Seite und der Abwehr von Angriffen. Rechtsgrundlage ist unser
+        berechtigtes Interesse nach Art. 6 Abs. 1 lit. f DSGVO. Eine Zusammenführung mit
+        anderen Daten oder ein Rückschluss auf einzelne Personen findet nicht statt.
+      </p>
+      <p>
+        Hoster:
+        <span class="platzhalter">[Name und Anschrift des Hosters]</span>.
+        Mit ihm besteht ein Vertrag zur Auftragsverarbeitung nach Art. 28 DSGVO.
+        Speicherdauer der Logdateien:
+        <span class="platzhalter">[z. B. 7 Tage, danach automatische Löschung]</span>.
+        Serverstandort und Drittlandbezug:
+        <span class="platzhalter">[z. B. Rechenzentrum in der EU, keine Übermittlung in
+        Drittländer]</span>.
+      </p>
+
+      <h2>Erinnerungen und Benachrichtigungen</h2>
+      <p>
+        Die Erinnerungen sind freiwillig und standardmäßig aus. Erst wenn du den Schalter in den
+        Einstellungen umlegst, fragt dein Browser, ob der Trinkwecker Benachrichtigungen anzeigen
+        darf. Ohne diesen Klick fragen wir nicht.
+      </p>
+      <p>
+        Die Erlaubnis verwaltet allein dein Browser. Sie ist kein Konto und keine Anmeldung. Die
+        Meldungen entstehen direkt in deinem geöffneten Browser-Tab. Es gibt <strong>keinen
+        Push-Dienst</strong> und keinen Server, der etwas an dich sendet, also auch keine
+        Geräte-Kennung, die irgendwohin übertragen würde.
+      </p>
+      <p>
+        Zurücknehmen kannst du die Erlaubnis jederzeit: entweder den Schalter in der App wieder
+        ausschalten oder in den Browsereinstellungen unter den Website-Berechtigungen die
+        Benachrichtigungen für diese Seite entziehen. Wird die Erlaubnis verweigert, funktioniert
+        der Zähler unverändert weiter.
+      </p>
+
+      <h2>Deine Rechte</h2>
+      <p>
+        Dir stehen gegenüber uns die folgenden Rechte zu:
+      </p>
+      <ul>
+        <li>Auskunft über die zu dir gespeicherten Daten (Art. 15 DSGVO),</li>
+        <li>Berichtigung unrichtiger Daten (Art. 16 DSGVO),</li>
+        <li>Löschung (Art. 17 DSGVO),</li>
+        <li>Einschränkung der Verarbeitung (Art. 18 DSGVO),</li>
+        <li>Datenübertragbarkeit (Art. 20 DSGVO),</li>
+        <li>Widerspruch gegen die Verarbeitung auf Grundlage berechtigter Interessen
+          (Art. 21 DSGVO).</li>
+      </ul>
+      <p>
+        Praktisch betreffen diese Rechte nur die Logdateien des Hosters, denn deine Trinkdaten
+        liegen ausschließlich bei dir und sind für uns nicht zugänglich. Für eine Anfrage genügt
+        eine Nachricht an <span class="platzhalter">[E-Mail-Adresse]</span>.
+      </p>
+      <p>
+        Du kannst dich außerdem bei einer Aufsichtsbehörde beschweren. In Österreich ist das die
+        Datenschutzbehörde, Barichgasse 40 bis 42, 1030 Wien. In Deutschland ist die
+        Landesbeauftragte oder der Landesbeauftragte für Datenschutz des jeweiligen Bundeslandes
+        zuständig, für uns
+        <span class="platzhalter">[zuständige Behörde, falls Sitz in Deutschland]</span>.
+      </p>
+
+      <h2>Keine automatischen Entscheidungen</h2>
+      <p>
+        Es findet kein Profiling und keine automatisierte Entscheidungsfindung im Sinne von
+        Art. 22 DSGVO statt.
+      </p>
+
+      <h2>Änderungen</h2>
+      <p>
+        Wird die App erweitert, passen wir diese Erklärung an. Es gilt die jeweils hier
+        veröffentlichte Fassung.
+      </p>
+      <p class="stand">
+        Stand: <span class="platzhalter">[Monat und Jahr]</span>
+      </p>
+
+      <footer class="fuss">
+        <a href="index.html">Trinkwecker</a>
+        <span aria-hidden="true">·</span>
+        <a href="impressum.html">Impressum</a>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Impressum des Trinkweckers nach ECG und DDG.">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='27' font-size='27'>&#128167;</text></svg>">
+<meta name="robots" content="noindex">
+<title>Impressum · Trinkwecker</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --card-rand: #232a33;
+    --text: #e6edf3;
+    --text-leise: #8b949e;
+    --mint: #3ddc97;
+    --mint-dunkel: #2bb87b;
+    --mint-schatten: rgba(61, 220, 151, .28);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(1200px 600px at 50% -10%, #14202b 0%, var(--bg) 60%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .huelle {
+    width: 100%;
+    max-width: 480px;
+    margin: auto;
+  }
+
+  .karte {
+    background: var(--card);
+    border: 1px solid var(--card-rand);
+    border-radius: 22px;
+    padding: 26px 26px 22px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+  }
+
+  .zurueck {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 8px 15px;
+    border: 1px solid var(--card-rand);
+    border-radius: 999px;
+    color: var(--text-leise);
+    font-size: .85rem;
+    text-decoration: none;
+    transition: color .2s ease, border-color .2s ease;
+  }
+
+  .zurueck:hover { color: var(--text); border-color: #3a444f; }
+  .zurueck:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 1.45rem;
+    letter-spacing: -.01em;
+  }
+
+  .untertitel {
+    margin: 0 0 20px;
+    color: var(--text-leise);
+    font-size: .85rem;
+  }
+
+  h2 {
+    margin: 26px 0 8px;
+    font-size: .95rem;
+    color: var(--mint);
+  }
+
+  p, li {
+    margin: 0 0 10px;
+    font-size: .9rem;
+    line-height: 1.6;
+    color: var(--text-leise);
+  }
+
+  ul {
+    margin: 0 0 12px;
+    padding-left: 20px;
+  }
+
+  li { margin-bottom: 6px; }
+
+  strong { color: var(--text); font-weight: 600; }
+
+  a { color: var(--mint); }
+
+  .merker {
+    margin: 0 0 6px;
+    padding: 13px 15px;
+    background: #0f141a;
+    border: 1px dashed var(--mint-dunkel);
+    border-radius: 12px;
+    font-size: .85rem;
+    line-height: 1.55;
+    color: var(--text-leise);
+  }
+
+  /* Jeder noch auszufüllende Wert steckt in einem solchen Feld. */
+  .platzhalter {
+    display: inline-block;
+    padding: 1px 7px;
+    background: #0f141a;
+    border: 1px dashed var(--mint-dunkel);
+    border-radius: 6px;
+    color: var(--mint);
+    font-size: .92em;
+  }
+
+  .bedingt {
+    margin: -4px 0 12px;
+    font-size: .78rem;
+    opacity: .8;
+  }
+
+  .angaben {
+    margin: 0 0 12px;
+  }
+
+  /* Beschriftung immer über dem Wert: die Platzhalter sind zu lang für zwei
+     Spalten, und ein einheitlicher Umbruch wirkt ruhiger als ein gemischter. */
+  .angaben div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--card-rand);
+    font-size: .9rem;
+    line-height: 1.5;
+    color: var(--text-leise);
+  }
+
+  .angaben div:last-child { border-bottom: 0; }
+
+  .angaben dt {
+    font-size: .82rem;
+    color: var(--text);
+  }
+
+  .angaben dd { margin: 0; }
+
+  .fuss {
+    margin-top: 26px;
+    padding-top: 16px;
+    border-top: 1px solid var(--card-rand);
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    font-size: .8rem;
+    color: var(--text-leise);
+  }
+
+  .fuss a { color: inherit; text-decoration: none; }
+  .fuss a:hover { color: var(--text); text-decoration: underline; }
+  .fuss a:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .zurueck { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="huelle">
+    <main class="karte">
+      <a class="zurueck" href="index.html">&#8592; Zurück zum Trinkwecker</a>
+
+      <h1>Impressum</h1>
+      <p class="untertitel">
+        Angaben nach § 5 E-Commerce-Gesetz (ECG) und § 25 Mediengesetz für Österreich
+        sowie nach § 5 Digitale-Dienste-Gesetz (DDG) für Deutschland.
+      </p>
+
+      <p class="merker">
+        <strong>Vor der Veröffentlichung ausfüllen:</strong> Alle grün umrandeten Felder in
+        eckigen Klammern sind Platzhalter und müssen durch die echten Angaben ersetzt werden.
+        Abschnitte, die nur für Unternehmen gelten, sind darunter jeweils gekennzeichnet und
+        können bei einem rein privaten Angebot entfallen.
+      </p>
+
+      <h2>Diensteanbieter und Medieninhaber</h2>
+      <dl class="angaben">
+        <div>
+          <dt>Name oder Firma</dt>
+          <dd><span class="platzhalter">[Vor- und Nachname oder Firmenwortlaut]</span></dd>
+        </div>
+        <div>
+          <dt>Anschrift</dt>
+          <dd>
+            <span class="platzhalter">[Straße und Hausnummer]</span>,
+            <span class="platzhalter">[PLZ und Ort]</span>,
+            <span class="platzhalter">[Land]</span>
+          </dd>
+        </div>
+        <div>
+          <dt>Rechtsform</dt>
+          <dd><span class="platzhalter">[z. B. Einzelunternehmen, GmbH, Privatperson]</span></dd>
+        </div>
+        <div>
+          <dt>Vertretung</dt>
+          <dd><span class="platzhalter">[vertretungsberechtigte Person, nur bei Gesellschaften]</span></dd>
+        </div>
+      </dl>
+
+      <h2>Kontakt</h2>
+      <dl class="angaben">
+        <div>
+          <dt>E-Mail</dt>
+          <dd><span class="platzhalter">[E-Mail-Adresse]</span></dd>
+        </div>
+        <div>
+          <dt>Telefon</dt>
+          <dd><span class="platzhalter">[Telefonnummer, falls vorhanden]</span></dd>
+        </div>
+      </dl>
+      <p class="bedingt">
+        Eine E-Mail-Adresse ist Pflicht, weil sie eine rasche elektronische Kontaktaufnahme
+        ermöglichen muss. Eine Telefonnummer ist nicht zwingend.
+      </p>
+
+      <h2>Unternehmensgegenstand</h2>
+      <p><span class="platzhalter">[z. B. Betrieb der kostenlosen Web-App Trinkwecker]</span></p>
+
+      <h2>Firmenbuch, Handelsregister und Umsatzsteuer</h2>
+      <dl class="angaben">
+        <div>
+          <dt>Firmenbuchnummer</dt>
+          <dd><span class="platzhalter">[FN 000000a, nur bei Eintragung]</span></dd>
+        </div>
+        <div>
+          <dt>Firmenbuchgericht</dt>
+          <dd><span class="platzhalter">[zuständiges Landes- oder Handelsgericht]</span></dd>
+        </div>
+        <div>
+          <dt>Handelsregister (DE)</dt>
+          <dd><span class="platzhalter">[HRB 00000 beim Amtsgericht ..., nur bei Eintragung]</span></dd>
+        </div>
+        <div>
+          <dt>UID beziehungsweise USt-IdNr.</dt>
+          <dd><span class="platzhalter">[ATU00000000 oder DE000000000, falls vorhanden]</span></dd>
+        </div>
+      </dl>
+      <p class="bedingt">
+        Diese Angaben sind nur nötig, soweit sie tatsächlich vorhanden sind. Wer nicht im
+        Firmenbuch oder Handelsregister steht und keine UID hat, streicht den Abschnitt.
+      </p>
+
+      <h2>Gewerbe und Aufsicht</h2>
+      <dl class="angaben">
+        <div>
+          <dt>Gewerbe</dt>
+          <dd><span class="platzhalter">[Bezeichnung des Gewerbes, falls gewerblich tätig]</span></dd>
+        </div>
+        <div>
+          <dt>Aufsichtsbehörde</dt>
+          <dd><span class="platzhalter">[zuständige Bezirkshauptmannschaft, Magistrat oder Behörde]</span></dd>
+        </div>
+        <div>
+          <dt>Kammer</dt>
+          <dd><span class="platzhalter">[z. B. Wirtschaftskammer Österreich, Fachgruppe ...]</span></dd>
+        </div>
+        <div>
+          <dt>Berufsrecht</dt>
+          <dd><span class="platzhalter">[z. B. Gewerbeordnung 1994, abrufbar auf ris.bka.gv.at]</span></dd>
+        </div>
+      </dl>
+      <p class="bedingt">
+        Nur für gewerbliche oder reglementierte Tätigkeiten. Ein privat betriebenes,
+        kostenloses Angebot ohne Werbung braucht diesen Abschnitt in der Regel nicht.
+      </p>
+
+      <h2>Verantwortlich für den Inhalt</h2>
+      <p>
+        <span class="platzhalter">[Vor- und Nachname]</span>,
+        <span class="platzhalter">[Anschrift wie oben]</span>
+      </p>
+      <p class="bedingt">
+        Angabe nach § 18 Abs. 2 Medienstaatsvertrag, nötig bei journalistisch-redaktionellen
+        Inhalten in Deutschland.
+      </p>
+
+      <h2>Grundlegende Richtung</h2>
+      <p>
+        Offenlegung nach § 25 Mediengesetz:
+        <span class="platzhalter">[z. B. Information über die eigene Web-App Trinkwecker, keine
+        redaktionellen Inhalte Dritter]</span>
+      </p>
+
+      <h2>Verbraucherstreitbeilegung</h2>
+      <p>
+        <span class="platzhalter">[Wir sind nicht bereit oder verpflichtet, an
+        Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.]</span>
+      </p>
+      <p class="bedingt">
+        Text bitte prüfen und an die eigene Situation anpassen. Wer zur Teilnahme verpflichtet
+        ist, nennt hier stattdessen die zuständige Schlichtungsstelle mit Anschrift.
+      </p>
+
+      <h2>Haftung</h2>
+      <p>
+        Die Inhalte dieser Seiten werden mit Sorgfalt erstellt. Für die Richtigkeit,
+        Vollständigkeit und Aktualität wird keine Gewähr übernommen. Der Trinkwecker ist eine
+        einfache Zählhilfe und ersetzt keine medizinische Beratung.
+      </p>
+      <p>
+        Für Inhalte externer Links ist ausschließlich deren Betreiber verantwortlich. Zum
+        Zeitpunkt der Verlinkung waren keine Rechtsverstöße erkennbar. Werden solche bekannt,
+        werden die Links entfernt.
+      </p>
+
+      <h2>Urheberrecht</h2>
+      <p>
+        Inhalte und Gestaltung dieser Seiten unterliegen dem Urheberrecht.
+        <span class="platzhalter">[Nutzungsbedingungen oder Lizenz, falls gewünscht]</span>
+      </p>
+
+      <h2>Datenschutz</h2>
+      <p>
+        Wie der Trinkwecker mit Daten umgeht, steht in der
+        <a href="datenschutz.html">Datenschutzerklärung</a>. Kurz gefasst: Alle Trinkdaten
+        bleiben im Browser auf dem eigenen Gerät.
+      </p>
+
+      <footer class="fuss">
+        <a href="index.html">Trinkwecker</a>
+        <span aria-hidden="true">·</span>
+        <a href="datenschutz.html">Datenschutz</a>
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
