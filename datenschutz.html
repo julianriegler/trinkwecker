@@ -4,20 +4,102 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Datenschutzerklärung des Trinkweckers: alle Trinkdaten bleiben lokal im Browser.">
-<meta name="theme-color" content="#0d1117">
+<meta name="theme-color" id="theme-farbe" content="#0d1117">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='27' font-size='27'>&#128167;</text></svg>">
 <meta name="robots" content="noindex">
 <title>Datenschutz · Trinkwecker</title>
 <style>
+  /* Dunkel ist der Grundzustand. Das helle Set steht darunter und greift über
+     data-theme am html-Element oder, bei Auto, über die Systemeinstellung. */
   :root {
+    color-scheme: dark;
+
     --bg: #0d1117;
+    --bg-oben: #14202b;
     --card: #161b22;
     --card-rand: #232a33;
+    --rand-stark: #3a444f;
+    --panel: #0f141a;
+    --vertieft: #0b0f14;
+
     --text: #e6edf3;
     --text-leise: #8b949e;
+    --text-schwach: #7b8896;
+
     --mint: #3ddc97;
     --mint-dunkel: #2bb87b;
+    --mint-text: #3ddc97;
+    --auf-mint: #05130c;
     --mint-schatten: rgba(61, 220, 151, .28);
+
+    --saeule-leer: #38434f;
+    --linie-stark: rgba(230, 237, 243, .55);
+    --backdrop: rgba(5, 9, 13, .74);
+    --schatten: rgba(0, 0, 0, .45);
+    --schatten-dialog: rgba(0, 0, 0, .6);
+  }
+
+  /* Helles Set. Jeder Textton hält mindestens 4,5 zu 1 gegen seinen Untergrund,
+     und Mint wird für Text deutlich dunkler, weil das helle Grün auf Weiß
+     verschwinden würde. Flächen dürfen das hellere Grün behalten.
+     Der Block steht zweimal: einmal für die ausdrückliche Wahl, einmal für Auto.
+     Eine Media Query lässt sich nicht in dieselbe Selektorliste ziehen. */
+  :root[data-theme="hell"] {
+    color-scheme: light;
+
+    --bg: #f2f5f9;
+    --bg-oben: #e2ebf4;
+    --card: #ffffff;
+    --card-rand: #dbe2ea;
+    --rand-stark: #aab4c1;
+    --panel: #f5f8fb;
+    --vertieft: #eaeff5;
+
+    --text: #16202b;
+    --text-leise: #5b6675;
+    --text-schwach: #67717f;
+
+    --mint: #22c07f;
+    --mint-dunkel: #0f9c63;
+    --mint-text: #0a7d4d;
+    --auf-mint: #05130c;
+    --mint-schatten: rgba(34, 192, 127, .3);
+
+    --saeule-leer: #c9d2dc;
+    --linie-stark: rgba(22, 32, 43, .45);
+    --backdrop: rgba(30, 42, 58, .42);
+    --schatten: rgba(20, 35, 55, .1);
+    --schatten-dialog: rgba(20, 35, 55, .22);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dunkel"]) {
+      color-scheme: light;
+
+      --bg: #f2f5f9;
+      --bg-oben: #e2ebf4;
+      --card: #ffffff;
+      --card-rand: #dbe2ea;
+      --rand-stark: #aab4c1;
+      --panel: #f5f8fb;
+      --vertieft: #eaeff5;
+
+      --text: #16202b;
+      --text-leise: #5b6675;
+      --text-schwach: #67717f;
+
+      --mint: #22c07f;
+      --mint-dunkel: #0f9c63;
+      --mint-text: #0a7d4d;
+      --auf-mint: #05130c;
+      --mint-schatten: rgba(34, 192, 127, .3);
+
+      --saeule-leer: #c9d2dc;
+      --linie-stark: rgba(22, 32, 43, .45);
+      --backdrop: rgba(30, 42, 58, .42);
+      --schatten: rgba(20, 35, 55, .1);
+      --schatten-dialog: rgba(20, 35, 55, .22);
+    }
   }
 
   * { box-sizing: border-box; }
@@ -31,7 +113,7 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: radial-gradient(1200px 600px at 50% -10%, #14202b 0%, var(--bg) 60%);
+    background: radial-gradient(1200px 600px at 50% -10%, var(--bg-oben) 0%, var(--bg) 60%);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -49,7 +131,7 @@
     border: 1px solid var(--card-rand);
     border-radius: 22px;
     padding: 26px 26px 22px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+    box-shadow: 0 24px 60px var(--schatten);
   }
 
   .zurueck {
@@ -64,7 +146,7 @@
     transition: color .2s ease, border-color .2s ease;
   }
 
-  .zurueck:hover { color: var(--text); border-color: #3a444f; }
+  .zurueck:hover { color: var(--text); border-color: var(--rand-stark); }
   .zurueck:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
 
   h1 {
@@ -82,7 +164,7 @@
   h2 {
     margin: 26px 0 8px;
     font-size: .95rem;
-    color: var(--mint);
+    color: var(--mint-text);
   }
 
   p, li {
@@ -101,12 +183,21 @@
 
   strong { color: var(--text); font-weight: 600; }
 
-  a { color: var(--mint); }
+  a { color: var(--mint-text); }
+
+  code {
+    padding: 1px 5px;
+    background: var(--panel);
+    border: 1px solid var(--card-rand);
+    border-radius: 5px;
+    font-size: .85em;
+    color: var(--text);
+  }
 
   .kurz {
     margin: 0 0 6px;
     padding: 14px 16px;
-    background: #0f141a;
+    background: var(--panel);
     border: 1px solid var(--card-rand);
     border-left: 3px solid var(--mint);
     border-radius: 12px;
@@ -118,7 +209,7 @@
   .merker {
     margin: 0 0 6px;
     padding: 13px 15px;
-    background: #0f141a;
+    background: var(--panel);
     border: 1px dashed var(--mint-dunkel);
     border-radius: 12px;
     font-size: .85rem;
@@ -130,23 +221,23 @@
   .platzhalter {
     display: inline-block;
     padding: 1px 7px;
-    background: #0f141a;
+    background: var(--panel);
     border: 1px dashed var(--mint-dunkel);
     border-radius: 6px;
-    color: var(--mint);
+    color: var(--mint-text);
     font-size: .92em;
   }
 
   .bedingt {
     margin: -4px 0 12px;
     font-size: .78rem;
-    opacity: .8;
+    color: var(--text-schwach);
   }
 
   .stand {
     margin: 18px 0 0;
     font-size: .78rem;
-    opacity: .8;
+    color: var(--text-schwach);
   }
 
   .fuss {
@@ -168,6 +259,30 @@
     .zurueck { transition: none; }
   }
 </style>
+
+<script>
+// Läuft vor dem ersten Zeichnen, damit bei heller Wahl nichts dunkel aufblitzt.
+// Die Farbe für die Browserleiste kommt aus der Variablen, die dann schon gilt.
+(function () {
+  "use strict";
+  var wurzel = document.documentElement;
+  var thema = "auto";
+  try {
+    var roh = localStorage.getItem("trinkwecker");
+    if (roh) {
+      var wert = JSON.parse(roh).thema;
+      if (wert === "hell" || wert === "dunkel") thema = wert;
+    }
+  } catch (e) {
+    // Ohne Speicher bleibt es bei Auto.
+  }
+  wurzel.setAttribute("data-theme", thema);
+
+  var meta = document.getElementById("theme-farbe");
+  var farbe = getComputedStyle(wurzel).getPropertyValue("--bg").trim();
+  if (meta && farbe) meta.setAttribute("content", farbe);
+})();
+</script>
 </head>
 <body>
   <div class="huelle">
@@ -217,12 +332,15 @@
         Gespeichert wird:
       </p>
       <ul>
-        <li>unter dem Namen <strong>trinkwecker</strong>: das heutige Datum, die Zahl der
-          getrunkenen Gläser, dein Tagesziel, die Glasgröße sowie die Einstellungen für
-          Erinnerungen;</li>
+        <li>unter dem Namen <strong>trinkwecker</strong>: das heutige Datum, die heute
+          getrunkene Menge in Millilitern samt der einzelnen Zugaben, dein Tagesziel, die
+          Glasgröße, die gewählte Darstellung, Tagesbeginn und Wochenstart sowie die
+          Einstellungen für Erinnerungen;</li>
         <li>unter dem Namen <strong>trinkwecker_verlauf</strong>: pro Tag ein Datum und die
-          Zahl der Gläser, für die Wochenansicht. Einträge, die älter als 60 Tage sind, löscht
-          die App beim Start automatisch.</li>
+          Menge in Millilitern, für die Wochenansicht. Einträge, die älter als 60 Tage sind,
+          löscht die App beim Start automatisch.</li>
+        <li>unter dem Namen <strong>trinkwecker_onboarding</strong>: nur der Vermerk, dass du
+          die Willkommenskarte gesehen hast.</li>
       </ul>
       <p>
         Es gibt keine Benutzerkonten, keine Cookies, keine Werbung, keine Analyse-Werkzeuge und
@@ -269,6 +387,25 @@
         Serverstandort und Drittlandbezug:
         <span class="platzhalter">[z. B. Rechenzentrum in der EU, keine Übermittlung in
         Drittländer]</span>.
+      </p>
+
+      <h2>Der Link zur Unterstützung</h2>
+      <p>
+        In der Fußzeile steht ein Link <strong>Unterstützen</strong>. Er führt zu einer
+        externen Spendenseite von
+        <span class="platzhalter">[Name des Anbieters der Spendenseite]</span>.
+      </p>
+      <p>
+        Auf dieser Seite ist von dort <strong>nichts eingebunden</strong>, weder ein Skript
+        noch ein Bild, ein Zählpixel oder ein eingebetteter Rahmen. Solange du den Link nicht
+        anklickst, entsteht also keine Verbindung zu diesem Anbieter, und er erfährt nichts
+        von deinem Besuch hier.
+      </p>
+      <p>
+        Klickst du ihn an, öffnet sich die fremde Seite in einem neuen Tab. Ab dort gelten
+        <strong>deren Datenschutzbestimmungen</strong>, auf die wir keinen Einfluss haben.
+        Der Link trägt <code>rel="noopener noreferrer"</code>, es wird also weder die
+        Herkunftsseite übermittelt noch Zugriff auf dieses Fenster gewährt.
       </p>
 
       <h2>Erinnerungen und Benachrichtigungen</h2>

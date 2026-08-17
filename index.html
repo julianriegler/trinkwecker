@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Trinkwecker: kleine App, die daran erinnert, genug Wasser zu trinken.">
-<meta name="theme-color" content="#0d1117">
+<meta name="theme-color" id="theme-farbe" content="#0d1117">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='27' font-size='27'>&#128167;</text></svg>">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -14,15 +14,100 @@
 <meta name="apple-mobile-web-app-title" content="Trinkwecker">
 <title>Trinkwecker</title>
 <style>
+  /* Dunkel ist der Grundzustand. Das helle Set steht darunter und greift über
+     data-theme am html-Element oder, bei Auto, über die Systemeinstellung. */
   :root {
+    color-scheme: dark;
+
     --bg: #0d1117;
+    --bg-oben: #14202b;
     --card: #161b22;
     --card-rand: #232a33;
+    --rand-stark: #3a444f;
+    --panel: #0f141a;
+    --vertieft: #0b0f14;
+
     --text: #e6edf3;
     --text-leise: #8b949e;
+    --text-schwach: #7b8896;
+
     --mint: #3ddc97;
     --mint-dunkel: #2bb87b;
+    --mint-text: #3ddc97;
+    --auf-mint: #05130c;
     --mint-schatten: rgba(61, 220, 151, .28);
+
+    --warnung: #ff8f8f;
+    --saeule-leer: #38434f;
+    --linie-stark: rgba(230, 237, 243, .55);
+    --backdrop: rgba(5, 9, 13, .74);
+    --schatten: rgba(0, 0, 0, .45);
+    --schatten-dialog: rgba(0, 0, 0, .6);
+  }
+
+  /* Helles Set. Jeder Textton hält mindestens 4,5 zu 1 gegen seinen Untergrund,
+     und Mint wird für Text deutlich dunkler, weil das helle Grün auf Weiß
+     verschwinden würde. Flächen dürfen das hellere Grün behalten.
+     Der Block steht zweimal: einmal für die ausdrückliche Wahl, einmal für Auto.
+     Eine Media Query lässt sich nicht in dieselbe Selektorliste ziehen. */
+  :root[data-theme="hell"] {
+    color-scheme: light;
+
+    --bg: #f2f5f9;
+    --bg-oben: #e2ebf4;
+    --card: #ffffff;
+    --card-rand: #dbe2ea;
+    --rand-stark: #aab4c1;
+    --panel: #f5f8fb;
+    --vertieft: #eaeff5;
+
+    --text: #16202b;
+    --text-leise: #5b6675;
+    --text-schwach: #67717f;
+
+    --mint: #22c07f;
+    --mint-dunkel: #0f9c63;
+    --mint-text: #0a7d4d;
+    --auf-mint: #05130c;
+    --mint-schatten: rgba(34, 192, 127, .3);
+
+    --warnung: #c22b2b;
+    --saeule-leer: #c9d2dc;
+    --linie-stark: rgba(22, 32, 43, .45);
+    --backdrop: rgba(30, 42, 58, .42);
+    --schatten: rgba(20, 35, 55, .1);
+    --schatten-dialog: rgba(20, 35, 55, .22);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dunkel"]) {
+      color-scheme: light;
+
+      --bg: #f2f5f9;
+      --bg-oben: #e2ebf4;
+      --card: #ffffff;
+      --card-rand: #dbe2ea;
+      --rand-stark: #aab4c1;
+      --panel: #f5f8fb;
+      --vertieft: #eaeff5;
+
+      --text: #16202b;
+      --text-leise: #5b6675;
+      --text-schwach: #67717f;
+
+      --mint: #22c07f;
+      --mint-dunkel: #0f9c63;
+      --mint-text: #0a7d4d;
+      --auf-mint: #05130c;
+      --mint-schatten: rgba(34, 192, 127, .3);
+
+      --warnung: #c22b2b;
+      --saeule-leer: #c9d2dc;
+      --linie-stark: rgba(22, 32, 43, .45);
+      --backdrop: rgba(30, 42, 58, .42);
+      --schatten: rgba(20, 35, 55, .1);
+      --schatten-dialog: rgba(20, 35, 55, .22);
+    }
   }
 
   * { box-sizing: border-box; }
@@ -36,7 +121,7 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    background: radial-gradient(1200px 600px at 50% -10%, #14202b 0%, var(--bg) 60%);
+    background: radial-gradient(1200px 600px at 50% -10%, var(--bg-oben) 0%, var(--bg) 60%);
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -59,7 +144,7 @@
     border: 1px solid var(--card-rand);
     border-radius: 22px;
     padding: 30px 26px 26px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+    box-shadow: 0 24px 60px var(--schatten);
     text-align: center;
   }
 
@@ -69,7 +154,7 @@
     letter-spacing: -.01em;
   }
 
-  h1 .tropfen { color: var(--mint); }
+  h1 .tropfen { color: var(--mint-text); }
 
   .untertitel {
     margin: 6px 0 26px;
@@ -89,7 +174,7 @@
     font-size: 4.4rem;
     font-weight: 700;
     line-height: 1;
-    color: var(--mint);
+    color: var(--mint-text);
     font-variant-numeric: tabular-nums;
   }
 
@@ -102,12 +187,19 @@
   .einheit {
     color: var(--text-leise);
     font-size: .9rem;
-    margin-bottom: 22px;
+    margin-bottom: 4px;
+  }
+
+  .liter {
+    margin: 0 0 20px;
+    font-size: .95rem;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
   }
 
   .balken {
     height: 14px;
-    background: #0b0f14;
+    background: var(--vertieft);
     border: 1px solid var(--card-rand);
     border-radius: 999px;
     overflow: hidden;
@@ -132,8 +224,7 @@
   .menge {
     margin: 4px 0 0;
     font-size: .8rem;
-    color: var(--text-leise);
-    opacity: .8;
+    color: var(--text-schwach);
     font-variant-numeric: tabular-nums;
   }
 
@@ -157,13 +248,19 @@
     border-color: var(--mint);
   }
 
+  /* Halbe Gläser füllen sich nur zur Hälfte, von unten. */
+  .glas.halb {
+    background: linear-gradient(to top, var(--mint) 50%, transparent 50%);
+    border-color: var(--mint);
+  }
+
   .plus {
     width: 108px;
     height: 108px;
     border: none;
     border-radius: 50%;
     background: linear-gradient(160deg, var(--mint), var(--mint-dunkel));
-    color: #05130c;
+    color: var(--auf-mint);
     font-size: 3rem;
     font-weight: 700;
     line-height: 1;
@@ -176,6 +273,14 @@
   .plus:active:not(:disabled) { transform: scale(.94); }
   .plus:disabled { opacity: .45; cursor: not-allowed; }
   .plus:focus-visible { outline: 3px solid var(--mint); outline-offset: 4px; }
+
+  .zugaben {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+  }
 
   .neben-aktionen {
     display: flex;
@@ -196,12 +301,12 @@
     transition: color .2s ease, border-color .2s ease;
   }
 
-  .klein:hover:not(:disabled) { color: var(--text); border-color: #3a444f; }
+  .klein:hover:not(:disabled) { color: var(--text); border-color: var(--rand-stark); }
   .klein:disabled { opacity: .4; cursor: not-allowed; }
   .klein:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
 
   .schalter[aria-expanded="true"] {
-    color: var(--mint);
+    color: var(--mint-text);
     border-color: var(--mint-dunkel);
   }
 
@@ -209,7 +314,7 @@
     display: block;
     margin-top: 16px;
     padding: 16px 16px 12px;
-    background: #0f141a;
+    background: var(--panel);
     border: 1px solid var(--card-rand);
     border-radius: 14px;
     text-align: left;
@@ -251,7 +356,7 @@
     border: 1px solid var(--card-rand);
     border-radius: 50%;
     background: var(--card);
-    color: var(--mint);
+    color: var(--mint-text);
     font-size: 1.05rem;
     line-height: 1;
     cursor: pointer;
@@ -291,9 +396,54 @@
   .feld-hinweis {
     margin: 12px 0 0;
     font-size: .8rem;
-    color: var(--text-leise);
-    opacity: .75;
+    color: var(--text-schwach);
     line-height: 1.4;
+  }
+
+  .daten-knoepfe {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .klein.gefahr { color: var(--warnung); }
+  .klein.gefahr:hover:not(:disabled) { color: var(--warnung); border-color: var(--warnung); }
+
+  .segmente {
+    display: inline-flex;
+    padding: 3px;
+    background: var(--vertieft);
+    border: 1px solid var(--card-rand);
+    border-radius: 999px;
+  }
+
+  .segment input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .segment span {
+    display: block;
+    padding: 6px 13px;
+    border-radius: 999px;
+    font-size: .8rem;
+    color: var(--text-leise);
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+
+  .segment input:checked + span {
+    background: var(--card);
+    color: var(--text);
+    font-weight: 600;
+    box-shadow: 0 1px 3px var(--schatten);
+  }
+
+  .segment input:focus-visible + span {
+    outline: 2px solid var(--mint);
+    outline-offset: 2px;
   }
 
   .abschnitt {
@@ -328,7 +478,7 @@
     width: 46px;
     height: 26px;
     flex: none;
-    background: #0b0f14;
+    background: var(--vertieft);
     border: 1px solid var(--card-rand);
     border-radius: 999px;
     transition: background .2s ease, border-color .2s ease;
@@ -353,7 +503,7 @@
 
   .schieber input:checked + .schieber-bahn::after {
     transform: translateX(20px);
-    background: #05130c;
+    background: var(--auf-mint);
   }
 
   .schieber input:focus-visible + .schieber-bahn {
@@ -410,7 +560,7 @@
     border: 1px solid var(--card-rand);
     border-radius: 22px;
     padding: 20px 22px 18px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+    box-shadow: 0 24px 60px var(--schatten);
   }
 
   .woche-kopf {
@@ -450,7 +600,7 @@
     height: 100%;
     display: flex;
     align-items: flex-end;
-    background: #0b0f14;
+    background: var(--vertieft);
     border: 1px solid var(--card-rand);
     border-radius: 7px;
     overflow: hidden;
@@ -458,7 +608,7 @@
 
   .saeule-fuellung {
     width: 100%;
-    background: #38434f;
+    background: var(--saeule-leer);
     transition: height .35s ease;
   }
 
@@ -476,7 +626,7 @@
     left: 0;
     right: 0;
     z-index: 2;
-    border-top: 1px dashed rgba(230, 237, 243, .55);
+    border-top: 1px dashed var(--linie-stark);
     pointer-events: none;
   }
 
@@ -494,7 +644,7 @@
   }
 
   .wochentag.heute {
-    color: var(--mint);
+    color: var(--mint-text);
     font-weight: 600;
   }
 
@@ -505,15 +655,174 @@
   }
 
   .woche-text strong {
-    color: var(--mint);
+    color: var(--mint-text);
     font-variant-numeric: tabular-nums;
   }
 
   .woche-fuss {
     margin: 5px 0 0;
     font-size: .8rem;
+    color: var(--text-schwach);
+  }
+
+  .serie {
+    display: block;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--card-rand);
+  }
+
+  /* Das hidden-Attribut muss die display-Angabe oben schlagen. */
+  .serie[hidden] { display: none; }
+
+  .serie-zeile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .serie-text {
+    margin: 0;
+    flex: 1 1 180px;
+    font-size: .84rem;
+    line-height: 1.5;
     color: var(--text-leise);
-    opacity: .75;
+  }
+
+  .serie-zahl {
+    color: var(--mint-text);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .serie-stand {
+    margin: 10px 0 0;
+    font-size: .8rem;
+    line-height: 1.5;
+    color: var(--mint-text);
+  }
+
+  .serie-stand[hidden] { display: none; }
+
+  .willkommen {
+    width: calc(100% - 32px);
+    max-width: 400px;
+    margin: auto;
+    padding: 0;
+    background: var(--card);
+    border: 1px solid var(--card-rand);
+    border-radius: 22px;
+    color: var(--text);
+    box-shadow: 0 30px 70px var(--schatten-dialog);
+  }
+
+  .willkommen::backdrop { background: var(--backdrop); }
+
+  .willkommen-inhalt { padding: 22px 22px 18px; }
+
+  .willkommen-kopf {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .willkommen-zaehler {
+    font-size: .8rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-leise);
+  }
+
+  .willkommen-schliessen {
+    width: 32px;
+    height: 32px;
+    flex: none;
+    border: 1px solid var(--card-rand);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text-leise);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: color .2s ease, border-color .2s ease;
+  }
+
+  .willkommen-schliessen:hover { color: var(--text); border-color: var(--rand-stark); }
+  .willkommen-schliessen:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
+
+  .willkommen-titel {
+    margin: 12px 0 2px;
+    font-size: 1.2rem;
+    letter-spacing: -.01em;
+  }
+
+  .wk-titel {
+    margin: 16px 0 8px;
+    font-size: .95rem;
+    color: var(--mint-text);
+  }
+
+  /* Die Überschrift bekommt den Fokus nur, damit Vorlesehilfen den Schritt
+     ansagen. Ein Rahmen um eine Überschrift würde nur verwirren, die
+     Bedienelemente behalten ihren. */
+  .wk-titel:focus { outline: none; }
+
+  .wk-text {
+    margin: 0 0 14px;
+    font-size: .85rem;
+    line-height: 1.6;
+    color: var(--text-leise);
+  }
+
+  .wk-feld {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .wk-einheit {
+    font-size: .8rem;
+    color: var(--text-leise);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wk-knopf {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(160deg, var(--mint), var(--mint-dunkel));
+    color: var(--auf-mint);
+    font: inherit;
+    font-size: .88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .2s ease;
+  }
+
+  .wk-knopf:hover:not(:disabled) { box-shadow: 0 10px 26px var(--mint-schatten); }
+  .wk-knopf:active:not(:disabled) { transform: scale(.97); }
+  .wk-knopf:disabled { opacity: .5; cursor: not-allowed; }
+  .wk-knopf:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; }
+
+  .wk-stand {
+    margin: 12px 0 0;
+    font-size: .8rem;
+    line-height: 1.5;
+    color: var(--text-leise);
+  }
+
+  .willkommen-fuss {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--card-rand);
   }
 
   .hinweis-karte {
@@ -521,7 +830,7 @@
     border: 1px solid var(--card-rand);
     border-radius: 22px;
     padding: 18px 22px 16px;
-    box-shadow: 0 24px 60px rgba(0, 0, 0, .35);
+    box-shadow: 0 24px 60px var(--schatten);
   }
 
   .hinweis-titel {
@@ -554,12 +863,12 @@
 
   .seitenfuss {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 10px;
+    gap: 4px 10px;
     padding-bottom: 4px;
     font-size: .8rem;
     color: var(--text-leise);
-    opacity: .7;
   }
 
   .seitenfuss a {
@@ -577,7 +886,7 @@
     color: var(--text-leise);
   }
 
-  .hinweis.geschafft { color: var(--mint); font-weight: 600; }
+  .hinweis.geschafft { color: var(--mint-text); font-weight: 600; }
 
   @media (max-width: 380px) {
     .zahl { font-size: 3.6rem; }
@@ -596,8 +905,33 @@
   @media (prefers-reduced-motion: reduce) {
     .balken-fuellung, .plus, .glas, .klein, .stepper-knopf,
     .schieber-bahn, .schieber-bahn::after, .saeule-fuellung { transition: none; }
+    .segment span { transition: none; }
   }
 </style>
+
+<script>
+// Läuft vor dem ersten Zeichnen, damit bei heller Wahl nichts dunkel aufblitzt.
+// Die Farbe für die Browserleiste kommt aus der Variablen, die dann schon gilt.
+(function () {
+  "use strict";
+  var wurzel = document.documentElement;
+  var thema = "auto";
+  try {
+    var roh = localStorage.getItem("trinkwecker");
+    if (roh) {
+      var wert = JSON.parse(roh).thema;
+      if (wert === "hell" || wert === "dunkel") thema = wert;
+    }
+  } catch (e) {
+    // Ohne Speicher bleibt es bei Auto.
+  }
+  wurzel.setAttribute("data-theme", thema);
+
+  var meta = document.getElementById("theme-farbe");
+  var farbe = getComputedStyle(wurzel).getPropertyValue("--bg").trim();
+  if (meta && farbe) meta.setAttribute("content", farbe);
+})();
+</script>
 </head>
 <body>
   <div class="huelle">
@@ -610,6 +944,7 @@
       <span class="von">/ <span id="ziel">8</span></span>
     </div>
     <p class="einheit">Gläser à <span id="glasgroesse-text">250</span> ml</p>
+    <p class="liter" id="liter">0,0 l getrunken</p>
 
     <div class="balken" role="progressbar" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" aria-label="Fortschritt Tagesziel" id="balken">
       <div class="balken-fuellung" id="fuellung"></div>
@@ -621,8 +956,13 @@
 
     <button class="plus" id="plus" aria-label="Ein Glas Wasser hinzufügen">+</button>
 
+    <div class="zugaben">
+      <button class="klein" id="halb" type="button" aria-label="Ein halbes Glas hinzufügen">+ ½ Glas</button>
+      <button class="klein" id="flasche" type="button" aria-label="Eine große Flasche mit 500 Millilitern hinzufügen">+ Flasche 0,5 l</button>
+    </div>
+
     <div class="neben-aktionen">
-      <button class="klein" id="minus">Ein Glas zurück</button>
+      <button class="klein" id="minus">Letzte Zugabe zurück</button>
       <button class="klein" id="reset">Tag zurücksetzen</button>
       <button class="klein schalter" id="schalter" aria-expanded="false" aria-controls="einstellungen">Einstellungen</button>
     </div>
@@ -649,6 +989,56 @@
       </div>
 
       <p class="feld-hinweis">Tagesziel 4 bis 20 Gläser, Glasgröße 100 bis 1000 ml. Beides bleibt über den Tag hinaus gespeichert.</p>
+
+      <div class="abschnitt">
+        <p class="abschnitt-titel">Tag und Woche</p>
+
+        <div class="feld">
+          <label class="feld-name" for="tagesgrenze">Tag beginnt um</label>
+          <select class="auswahl" id="tagesgrenze"></select>
+        </div>
+
+        <div class="feld">
+          <span class="feld-name" id="wochenstart-name">Woche beginnt am</span>
+          <div class="segmente" role="radiogroup" aria-labelledby="wochenstart-name">
+            <label class="segment">
+              <input type="radio" name="wochenstart" value="mo" id="wochenstart-mo">
+              <span>Montag</span>
+            </label>
+            <label class="segment">
+              <input type="radio" name="wochenstart" value="so" id="wochenstart-so">
+              <span>Sonntag</span>
+            </label>
+          </div>
+        </div>
+
+        <p class="feld-hinweis">Wer nach Mitternacht noch trinkt, stellt den Tagesbeginn später.
+          Bis zu dieser Stunde zählt alles noch zum Vortag.</p>
+      </div>
+
+      <div class="abschnitt">
+        <p class="abschnitt-titel">Darstellung</p>
+
+        <div class="feld">
+          <span class="feld-name" id="thema-name">Farben</span>
+          <div class="segmente" role="radiogroup" aria-labelledby="thema-name">
+            <label class="segment">
+              <input type="radio" name="thema" value="auto" id="thema-auto">
+              <span>Auto</span>
+            </label>
+            <label class="segment">
+              <input type="radio" name="thema" value="hell" id="thema-hell">
+              <span>Hell</span>
+            </label>
+            <label class="segment">
+              <input type="radio" name="thema" value="dunkel" id="thema-dunkel">
+              <span>Dunkel</span>
+            </label>
+          </div>
+        </div>
+
+        <p class="feld-hinweis">Auto folgt der Einstellung deines Geräts.</p>
+      </div>
 
       <div class="abschnitt">
         <p class="abschnitt-titel" id="erinnerungen-titel">Erinnerungen</p>
@@ -691,6 +1081,25 @@
 
         <p class="feld-hinweis" id="erinnerung-hinweis"></p>
       </div>
+
+      <div class="abschnitt">
+        <p class="abschnitt-titel">Deine Daten</p>
+
+        <div class="daten-knoepfe">
+          <button class="klein" id="export" type="button">Daten exportieren</button>
+          <button class="klein" id="import" type="button">Daten importieren</button>
+          <button class="klein gefahr" id="loeschen" type="button">Alle Daten löschen</button>
+        </div>
+
+        <input type="file" id="import-feld" accept="application/json,.json" hidden>
+
+        <p class="feld-hinweis" id="daten-stand" role="status" aria-live="polite">Der Export legt eine
+          JSON-Datei mit Stand, Einstellungen und Verlauf an. Sie bleibt auf deinem Gerät.</p>
+      </div>
+
+      <div class="abschnitt">
+        <button class="klein" id="einfuehrung" type="button">Kurze Einführung erneut ansehen</button>
+      </div>
     </div>
 
     <p class="hinweis" id="hinweis" role="status" aria-live="polite"></p>
@@ -707,6 +1116,14 @@
 
     <p class="woche-text" id="woche-text"></p>
     <p class="woche-fuss" id="woche-fuss"></p>
+
+    <div class="serie" id="serie" hidden>
+      <div class="serie-zeile">
+        <p class="serie-text" id="serie-text"></p>
+        <button class="klein" id="teilen" type="button">Teilen</button>
+      </div>
+      <p class="serie-stand" id="serie-stand" role="status" aria-live="polite" hidden></p>
+    </div>
   </section>
 
   <section class="hinweis-karte" aria-labelledby="gesundheit-titel">
@@ -734,8 +1151,62 @@
     <a href="impressum.html">Impressum</a>
     <span aria-hidden="true">·</span>
     <a href="datenschutz.html">Datenschutz</a>
+    <span aria-hidden="true" id="unterstuetzen-trenner">·</span>
+    <!-- Die Adresse setzt das Skript aus SPENDEN_URL. Ohne Skript bleibt der
+         Eintrag ein toter Text statt eines Links ins Leere. -->
+    <a id="unterstuetzen" target="_blank" rel="noopener noreferrer"
+       aria-label="Unterstützen, öffnet eine externe Seite in einem neuen Tab">Unterstützen</a>
   </footer>
   </div>
+
+  <dialog class="willkommen" id="willkommen" aria-labelledby="willkommen-titel">
+    <div class="willkommen-inhalt">
+      <div class="willkommen-kopf">
+        <span class="willkommen-zaehler" id="willkommen-zaehler">Schritt 1 von 3</span>
+        <button class="willkommen-schliessen" id="willkommen-schliessen" type="button" aria-label="Einführung schließen">&#215;</button>
+      </div>
+
+      <h2 class="willkommen-titel" id="willkommen-titel">Willkommen beim Trinkwecker</h2>
+
+      <section id="wk-schritt-1" aria-labelledby="wk-titel-1">
+        <h3 class="wk-titel" id="wk-titel-1" tabindex="-1">Dein Tagesziel</h3>
+        <p class="wk-text">
+          Wie viele Gläser möchtest du am Tag trinken? Acht sind voreingestellt und nur ein
+          Richtwert. Ändern kannst du das später jederzeit in den Einstellungen.
+        </p>
+        <div class="wk-feld">
+          <div class="stepper">
+            <button class="stepper-knopf" id="wk-ziel-minus" type="button" aria-label="Tagesziel verringern">&minus;</button>
+            <input class="stepper-feld" id="wk-ziel" type="number" inputmode="numeric" min="4" max="20" step="1" value="8" aria-label="Gläser pro Tag">
+            <button class="stepper-knopf" id="wk-ziel-plus" type="button" aria-label="Tagesziel erhöhen">+</button>
+          </div>
+          <span class="wk-einheit" id="wk-menge"></span>
+        </div>
+      </section>
+
+      <section id="wk-schritt-2" aria-labelledby="wk-titel-2" hidden>
+        <h3 class="wk-titel" id="wk-titel-2" tabindex="-1">Erinnerungen</h3>
+        <p class="wk-text">
+          Der Trinkwecker kann dich in einem Zeitfenster deiner Wahl ans Trinken erinnern,
+          voreingestellt sind 8 bis 20 Uhr. Dein Browser fragt dafür einmal um Erlaubnis. Sie
+          wird nur für diese Erinnerungen genutzt und ist jederzeit widerrufbar.
+        </p>
+        <button class="wk-knopf" id="wk-erinnerungen" type="button">Erinnerungen einschalten</button>
+        <p class="wk-stand" id="wk-erinnerung-stand" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="wk-schritt-3" aria-labelledby="wk-titel-3" hidden>
+        <h3 class="wk-titel" id="wk-titel-3" tabindex="-1">Auf den Homescreen</h3>
+        <p class="wk-text" id="wk-install-text"></p>
+        <button class="wk-knopf" id="wk-installieren" type="button" hidden>Jetzt installieren</button>
+      </section>
+
+      <div class="willkommen-fuss">
+        <button class="klein" id="wk-zurueck" type="button">Zurück</button>
+        <button class="wk-knopf" id="wk-weiter" type="button">Weiter</button>
+      </div>
+    </div>
+  </dialog>
 
 <script>
 (function () {
@@ -743,14 +1214,31 @@
 
   var SCHLUESSEL = "trinkwecker";
   var VERLAUF_SCHLUESSEL = "trinkwecker_verlauf";
+  var ONBOARDING_SCHLUESSEL = "trinkwecker_onboarding";
   var VERLAUF_TAGE = 60; // Ältere Einträge fliegen beim Start raus.
 
-  var KUERZEL = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
-  var WOCHENTAGE = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"];
+  // ===========================================================================
+  // PLATZHALTER: Adresse der eigenen Spendenseite eintragen, etwa bei Ko-fi,
+  // Liberapay, PayPal oder einem Verein. Ein leerer Wert blendet den Link in der
+  // Fußzeile aus. Eingebunden wird von dort nichts: kein Skript, kein Bild, kein
+  // Rahmen. Erst ein Klick baut überhaupt eine Verbindung dorthin auf.
+  var SPENDEN_URL = "https://example.org/trinkwecker-unterstuetzen";
+  // ===========================================================================
+
+  // Beide Listen sind nach getDay() geordnet, also mit Sonntag an Stelle 0.
+  // Damit stimmen die Beschriftungen unabhängig davon, wo die Woche beginnt.
+  var KUERZEL = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+  var WOCHENTAGE = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+
+  var GRENZE_STANDARD = 0, GRENZE_MIN = 0, GRENZE_MAX = 6;
 
   var ZIEL_STANDARD = 8, ZIEL_MIN = 4, ZIEL_MAX = 20;
   var ML_STANDARD = 250, ML_MIN = 100, ML_MAX = 1000, ML_SCHRITT = 50;
-  var STAND_MAX = 99;
+  // Gezählt wird intern in Millilitern. Die Obergrenze fängt Dauerdrücken ab,
+  // 20 Liter am Tag trinkt niemand.
+  var ML_TAG_MAX = 20000;
+  var FLASCHE_ML = 500;
+  var ZUGABEN_MAX = 200; // So viele einzelne Zugaben merkt sich ein Tag fürs Zurücknehmen.
 
   // Zur Auswahl stehen 60, 90 und 120 Minuten. Erlaubt ist mehr, damit ein
   // gespeicherter oder zum Testen gesetzter Wert nicht verworfen wird.
@@ -766,7 +1254,10 @@
   var elMenge = document.getElementById("menge");
   var elGlasgroesseText = document.getElementById("glasgroesse-text");
   var elGlaeser = document.getElementById("glaeser");
+  var elLiter = document.getElementById("liter");
   var elPlus = document.getElementById("plus");
+  var elHalb = document.getElementById("halb");
+  var elFlasche = document.getElementById("flasche");
   var elMinus = document.getElementById("minus");
   var elReset = document.getElementById("reset");
   var elHinweis = document.getElementById("hinweis");
@@ -788,11 +1279,63 @@
   var elWocheSpanne = document.getElementById("woche-spanne");
   var elWocheText = document.getElementById("woche-text");
   var elWocheFuss = document.getElementById("woche-fuss");
+  var elTagesgrenze = document.getElementById("tagesgrenze");
+  var wochenstartFelder = [
+    document.getElementById("wochenstart-mo"),
+    document.getElementById("wochenstart-so")
+  ];
+  var elThemeFarbe = document.getElementById("theme-farbe");
+  var themaFelder = [
+    document.getElementById("thema-auto"),
+    document.getElementById("thema-hell"),
+    document.getElementById("thema-dunkel")
+  ];
+  var elUnterstuetzen = document.getElementById("unterstuetzen");
+  var elUnterstuetzenTrenner = document.getElementById("unterstuetzen-trenner");
+  var elSerie = document.getElementById("serie");
+  var elSerieText = document.getElementById("serie-text");
+  var elSerieStand = document.getElementById("serie-stand");
+  var elTeilen = document.getElementById("teilen");
+  var elExport = document.getElementById("export");
+  var elImport = document.getElementById("import");
+  var elImportFeld = document.getElementById("import-feld");
+  var elLoeschen = document.getElementById("loeschen");
+  var elDatenStand = document.getElementById("daten-stand");
+  var elEinfuehrung = document.getElementById("einfuehrung");
+  var elWillkommen = document.getElementById("willkommen");
+  var elWkZaehler = document.getElementById("willkommen-zaehler");
+  var elWkSchliessen = document.getElementById("willkommen-schliessen");
+  var elWkZiel = document.getElementById("wk-ziel");
+  var elWkZielMinus = document.getElementById("wk-ziel-minus");
+  var elWkZielPlus = document.getElementById("wk-ziel-plus");
+  var elWkMenge = document.getElementById("wk-menge");
+  var elWkErinnerungen = document.getElementById("wk-erinnerungen");
+  var elWkErinnerungStand = document.getElementById("wk-erinnerung-stand");
+  var elWkInstallText = document.getElementById("wk-install-text");
+  var elWkInstallieren = document.getElementById("wk-installieren");
+  var elWkZurueck = document.getElementById("wk-zurueck");
+  var elWkWeiter = document.getElementById("wk-weiter");
 
-  var stand = 0;
+  var wkAbschnitte = [
+    document.getElementById("wk-schritt-1"),
+    document.getElementById("wk-schritt-2"),
+    document.getElementById("wk-schritt-3")
+  ];
+  var wkTitel = [
+    document.getElementById("wk-titel-1"),
+    document.getElementById("wk-titel-2"),
+    document.getElementById("wk-titel-3")
+  ];
+
+  var ml = 0;          // Getrunkene Milliliter am heutigen Tag.
+  var zugaben = [];    // Die einzelnen Zugaben von heute, für das Zurücknehmen.
+  var alteFassung = false;
   var ziel = ZIEL_STANDARD;
   var mlProGlas = ML_STANDARD;
   var speicherGeht = true;
+  var thema = "auto";        // auto, hell oder dunkel
+  var tagesgrenze = GRENZE_STANDARD; // Stunde, ab der ein neuer Tag zählt.
+  var wochenstart = "mo";    // mo oder so
 
   var erinnerungAn = false;
   var intervall = INTERVALL_STANDARD;
@@ -803,6 +1346,12 @@
   var timer = null;
   var statusText = "";  // Freundlicher Hinweis für die Statuszeile, sonst leer.
 
+  var standTimer = null; // Blendet die Rückmeldung des Teilen-Knopfs wieder aus.
+
+  var wkSchritt = 1;
+  var wkLetzterFokus = null;
+  var installAufforderung = null; // Vom Browser angebotene Installation, falls vorhanden.
+
   // Lokales Datum als YYYY-MM-DD, damit der Zähler zu Mitternacht neu startet.
   function isoDatum(d) {
     var m = String(d.getMonth() + 1).padStart(2, "0");
@@ -810,8 +1359,18 @@
     return d.getFullYear() + "-" + m + "-" + t;
   }
 
+  // Der Tag wechselt erst zur eingestellten Stunde. Dafür wird die Grenze von der
+  // aktuellen Zeit abgezogen, bevor das lokale Kalenderdatum gebildet wird.
   function heute() {
-    return isoDatum(new Date());
+    var d = new Date();
+    d.setHours(d.getHours() - tagesgrenze);
+    return isoDatum(d);
+  }
+
+  // Derselbe Tag als Datum um Mitternacht, für alle Rechnungen mit Tagen.
+  function heuteDatum() {
+    var teile = heute().split("-");
+    return new Date(Number(teile[0]), Number(teile[1]) - 1, Number(teile[2]));
   }
 
   // Fehlende, unlesbare oder unsinnige Werte fallen auf den Standard zurück,
@@ -834,7 +1393,11 @@
   }
 
   function laden() {
-    var standardwerte = { stand: 0, ziel: ZIEL_STANDARD, ml: ML_STANDARD, erinnerung: erinnerungStandard() };
+    var standardwerte = {
+      alt: false, heutig: false, ml: 0, zugaben: [], ziel: ZIEL_STANDARD, glasgroesse: ML_STANDARD,
+      thema: "auto", tagesgrenze: GRENZE_STANDARD, wochenstart: "mo",
+      erinnerung: erinnerungStandard()
+    };
     var roh;
     try {
       roh = localStorage.getItem(SCHLUESSEL);
@@ -866,26 +1429,79 @@
       erinnerung.bis = BIS_STANDARD;
     }
 
+    var glasgroesse = zahlOderStandard(daten.mlProGlas, ML_MIN, ML_MAX, ML_STANDARD);
+    var version = zahlOderStandard(daten.version, 0, 99, 1);
+    // Für den Datumsvergleich zählt die gespeicherte Grenze, nicht die gerade
+    // im Speicher stehende: sonst würde ein Wechsel der Grenze den Tag verwerfen.
+    tagesgrenze = zahlOderStandard(daten.tagesgrenze, GRENZE_MIN, GRENZE_MAX, GRENZE_STANDARD);
+    var heutig = daten.datum === heute();
+
+    // Fassung 1 zählte ganze Gläser. Der Wert wird mit der damals gespeicherten
+    // Glasgröße in Milliliter umgerechnet, dadurch bleibt die Anzeige gleich.
+    var mlWert = version >= 2
+      ? zahlOderStandard(daten.ml, 0, ML_TAG_MAX, 0)
+      : Math.min(zahlOderStandard(daten.glaeser, 0, 99, 0) * glasgroesse, ML_TAG_MAX);
+
     return {
       // Die Einstellungen gelten dauerhaft, der Zähler nur für den heutigen Tag.
+      alt: version < 2,
+      heutig: heutig,
+      thema: (daten.thema === "hell" || daten.thema === "dunkel") ? daten.thema : "auto",
+      tagesgrenze: zahlOderStandard(daten.tagesgrenze, GRENZE_MIN, GRENZE_MAX, GRENZE_STANDARD),
+      wochenstart: daten.wochenstart === "so" ? "so" : "mo",
       ziel: zahlOderStandard(daten.ziel, ZIEL_MIN, ZIEL_MAX, ZIEL_STANDARD),
-      ml: zahlOderStandard(daten.mlProGlas, ML_MIN, ML_MAX, ML_STANDARD),
-      stand: daten.datum === heute() ? zahlOderStandard(daten.glaeser, 0, STAND_MAX, 0) : 0,
+      glasgroesse: glasgroesse,
+      ml: heutig ? mlWert : 0,
+      zugaben: (version >= 2 && heutig) ? zugabenSaeubern(daten.zugaben) : [],
       erinnerung: erinnerung
     };
   }
 
+  // Eine Liste einzelner Zugaben in Millilitern, alles Unbrauchbare fällt weg.
+  function zugabenSaeubern(liste) {
+    var sauber = [];
+    if (!liste || typeof liste.length !== "number") return sauber;
+    for (var i = 0; i < liste.length && sauber.length < ZUGABEN_MAX; i++) {
+      var wert = zahlOderStandard(liste[i], 0, ML_TAG_MAX, 0);
+      if (wert > 0) sauber.push(wert);
+    }
+    return sauber;
+  }
+
   function uebernehmen() {
+    // Erst die Grenze setzen: laden() hat sie schon gelesen, und alles Weitere
+    // fragt danach nach dem heutigen Datum.
     var daten = laden();
-    stand = daten.stand;
+    tagesgrenze = daten.tagesgrenze;
+    wochenstart = daten.wochenstart;
+    thema = daten.thema;
+    ml = daten.ml;
+    zugaben = daten.zugaben;
+    alteFassung = daten.alt;
     ziel = daten.ziel;
-    mlProGlas = daten.ml;
+    mlProGlas = daten.glasgroesse;
     erinnerungAn = daten.erinnerung.an;
     intervall = daten.erinnerung.intervall;
     fensterVon = daten.erinnerung.von;
     fensterBis = daten.erinnerung.bis;
     naechste = daten.erinnerung.naechste;
     verlauf = verlaufLaden();
+
+    // Der Verlauf zählte in Fassung 1 ebenfalls Gläser.
+    if (alteFassung) {
+      Object.keys(verlauf).forEach(function (tag) {
+        verlauf[tag] = Math.min(verlauf[tag] * mlProGlas, ML_TAG_MAX);
+      });
+    }
+
+    // Steht der Datensatz auf einem anderen Tag, etwa nach einem Wechsel der
+    // Tagesgrenze, führt der Verlauf den Wert des heutigen Tages. Passt das
+    // Datum dagegen, ist der Datensatz die frischere Quelle: er wird zusammen
+    // mit dem Verlauf geschrieben.
+    var heuteText = heute();
+    if (!daten.heutig && Object.prototype.hasOwnProperty.call(verlauf, heuteText)) {
+      ml = verlauf[heuteText];
+    }
   }
 
   function speichern() {
@@ -903,8 +1519,14 @@
       } catch (e) {
         datensatz = {}; // Unlesbarer Altstand wird ersetzt.
       }
+      datensatz.version = 2;
       datensatz.datum = heute();
-      datensatz.glaeser = stand;
+      datensatz.thema = thema;
+      datensatz.tagesgrenze = tagesgrenze;
+      datensatz.wochenstart = wochenstart;
+      datensatz.ml = ml;
+      datensatz.zugaben = zugaben;
+      delete datensatz.glaeser; // Feld der alten Fassung, jetzt in Millilitern.
       datensatz.ziel = ziel;
       datensatz.mlProGlas = mlProGlas;
       datensatz.erinnerungAn = erinnerungAn;
@@ -916,6 +1538,30 @@
     } catch (e) {
       speicherGeht = false;
     }
+  }
+
+  // ----- Darstellung --------------------------------------------------------
+
+  // Die Farbe der Browserleiste kommt aus der Variablen, die gerade gilt. So
+  // gibt es nur eine Quelle für die Farben, das CSS.
+  function themaFarbeSetzen() {
+    if (!elThemeFarbe) return;
+    var farbe = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+    if (farbe) elThemeFarbe.setAttribute("content", farbe);
+  }
+
+  function themaAnwenden() {
+    document.documentElement.setAttribute("data-theme", thema);
+    for (var i = 0; i < themaFelder.length; i++) {
+      themaFelder[i].checked = themaFelder[i].value === thema;
+    }
+    themaFarbeSetzen();
+  }
+
+  function themaSetzen(neu) {
+    thema = (neu === "hell" || neu === "dunkel") ? neu : "auto";
+    speichern();
+    themaAnwenden();
   }
 
   // ----- Verlauf ------------------------------------------------------------
@@ -940,13 +1586,17 @@
     } catch (e) {
       return {};
     }
-    if (!daten || typeof daten !== "object" || Array.isArray(daten)) return {};
+    return verlaufSaeubern(daten);
+  }
 
-    // Nur echte Datumsschlüssel mit brauchbaren Zahlen übernehmen.
+  // Nur echte Datumsschlüssel mit brauchbaren Zahlen übernehmen. Gilt für den
+  // eigenen Speicher genauso wie für eine eingelesene Datei.
+  function verlaufSaeubern(daten) {
     var sauber = {};
+    if (!daten || typeof daten !== "object" || Array.isArray(daten)) return sauber;
     Object.keys(daten).forEach(function (tag) {
       if (!istDatum(tag)) return;
-      var wert = zahlOderStandard(daten[tag], 0, STAND_MAX, -1);
+      var wert = zahlOderStandard(daten[tag], 0, ML_TAG_MAX, -1);
       if (wert >= 0) sauber[tag] = wert;
     });
     return sauber;
@@ -963,8 +1613,7 @@
 
   // ISO-Daten lassen sich als Text vergleichen, das spart das Umrechnen.
   function verlaufAufraeumen() {
-    var grenze = new Date();
-    grenze.setHours(0, 0, 0, 0);
+    var grenze = heuteDatum();
     grenze.setDate(grenze.getDate() - VERLAUF_TAGE);
     var aeltesteErlaubt = isoDatum(grenze);
 
@@ -979,8 +1628,27 @@
   }
 
   function verlaufMerken() {
-    verlauf[heute()] = stand;
+    verlauf[heute()] = ml;
     verlaufSpeichern();
+  }
+
+  // Schreibt eine einzelne Einstellung, ohne Datum und Zählerstand anzufassen.
+  // Nötig beim Wechsel der Tagesgrenze: dort darf der heutige Stand nicht mit
+  // in den neuen Tag wandern.
+  function feldSchreiben(name, wert) {
+    if (!speicherGeht) return;
+    try {
+      var datensatz = {};
+      var roh = localStorage.getItem(SCHLUESSEL);
+      if (roh) {
+        var alt = JSON.parse(roh);
+        if (alt && typeof alt === "object") datensatz = alt;
+      }
+      datensatz[name] = wert;
+      localStorage.setItem(SCHLUESSEL, JSON.stringify(datensatz));
+    } catch (e) {
+      speicherGeht = false;
+    }
   }
 
   function nf(n) {
@@ -991,11 +1659,43 @@
     }
   }
 
+  function nfDezimal(n, stellen) {
+    try {
+      return n.toLocaleString("de-AT", { minimumFractionDigits: stellen, maximumFractionDigits: stellen });
+    } catch (e) {
+      return n.toFixed(stellen).replace(".", ",");
+    }
+  }
+
+  // Gläser mit einer Nachkommastelle, aber ohne ",0" bei glatten Werten.
+  function glaeserText(anteil) {
+    var gerundet = Math.round(anteil * 10) / 10;
+    return gerundet % 1 === 0 ? nfDezimal(gerundet, 0) : nfDezimal(gerundet, 1);
+  }
+
+  function glaeserMitEinheit(anteil) {
+    var gerundet = Math.round(anteil * 10) / 10;
+    return glaeserText(gerundet) + (gerundet === 1 ? " Glas" : " Gläser");
+  }
+
+  function literText(mlWert) {
+    return nfDezimal(Math.round(mlWert / 100) / 10, 1) + " l";
+  }
+
+  function zielMl() {
+    return ziel * mlProGlas;
+  }
+
   function glaeserZeichnen() {
+    var voll = Math.floor(ml / mlProGlas);
+    var rest = ml / mlProGlas - voll;
     elGlaeser.textContent = "";
     for (var i = 0; i < ziel; i++) {
       var glas = document.createElement("span");
-      glas.className = "glas" + (i < stand ? " voll" : "");
+      var klasse = "glas";
+      if (i < voll) klasse += " voll";
+      else if (i === voll && rest >= 0.25) klasse += " halb";
+      glas.className = klasse;
       elGlaeser.appendChild(glas);
     }
   }
@@ -1008,6 +1708,11 @@
     elZielPlus.disabled = ziel >= ZIEL_MAX;
     elMlMinus.disabled = mlProGlas <= ML_MIN;
     elMlPlus.disabled = mlProGlas >= ML_MAX;
+
+    if (document.activeElement !== elTagesgrenze) elTagesgrenze.value = String(tagesgrenze);
+    for (var w = 0; w < wochenstartFelder.length; w++) {
+      wochenstartFelder[w].checked = wochenstartFelder[w].value === wochenstart;
+    }
   }
 
   // ----- Wochenansicht ------------------------------------------------------
@@ -1016,16 +1721,17 @@
     return d.getDate() + "." + (d.getMonth() + 1) + ".";
   }
 
-  // Montag der Woche, in der das übergebene Datum liegt.
+  // Erster Tag der Woche, in der das übergebene Datum liegt.
   function wochenStart(d) {
     var start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    start.setDate(start.getDate() - ((start.getDay() + 6) % 7));
+    var tag = start.getDay(); // 0 = Sonntag
+    start.setDate(start.getDate() - (wochenstart === "so" ? tag : (tag + 6) % 7));
     return start;
   }
 
   function wocheSammeln() {
     var heuteText = heute();
-    var start = wochenStart(new Date());
+    var start = wochenStart(heuteDatum());
     var tage = [];
 
     for (var i = 0; i < 7; i++) {
@@ -1037,7 +1743,7 @@
       tage.push({
         datum: d,
         tag: tag,
-        wert: istHeute ? stand : (vorhanden ? verlauf[tag] : 0),
+        wert: istHeute ? ml : (vorhanden ? verlauf[tag] : 0),
         vorhanden: vorhanden,
         heute: istHeute
       });
@@ -1051,27 +1757,27 @@
     var erreicht = 0;
     tage.forEach(function (t) {
       if (t.wert > hoechster) hoechster = t.wert;
-      if (t.wert >= ziel) erreicht++;
+      if (t.wert >= zielMl()) erreicht++;
     });
     // Etwas Luft nach oben, damit die Zielmarke nicht am Rand klebt.
-    var skala = Math.max(ziel, hoechster) * 1.1;
+    var skala = Math.max(zielMl(), hoechster) * 1.1;
 
     elDiagramm.textContent = "";
     elWochentage.textContent = "";
 
     var linie = document.createElement("div");
     linie.className = "ziel-linie";
-    linie.style.bottom = (ziel / skala * 100) + "%";
+    linie.style.bottom = (zielMl() / skala * 100) + "%";
     elDiagramm.appendChild(linie);
 
     tage.forEach(function (t, i) {
       var saeule = document.createElement("div");
       saeule.className = "saeule" +
-        (t.wert >= ziel ? " erreicht" : "") +
+        (t.wert >= zielMl() ? " erreicht" : "") +
         (t.heute ? " heute" : "");
       saeule.setAttribute("role", "img");
-      saeule.setAttribute("aria-label", WOCHENTAGE[i] + ", " + kurzDatum(t.datum) + ": " +
-        (t.vorhanden ? t.wert + " von " + ziel + " Gläsern" : "kein Eintrag"));
+      saeule.setAttribute("aria-label", WOCHENTAGE[t.datum.getDay()] + ", " + kurzDatum(t.datum) + ": " +
+        (t.vorhanden ? glaeserText(t.wert / mlProGlas) + " von " + ziel + " Gläsern" : "kein Eintrag"));
 
       // Fehlende Tage haben Höhe 0 und bleiben damit ein leerer Balken.
       var fuellung = document.createElement("div");
@@ -1082,7 +1788,7 @@
 
       var kuerzel = document.createElement("span");
       kuerzel.className = "wochentag" + (t.heute ? " heute" : "");
-      kuerzel.textContent = KUERZEL[i];
+      kuerzel.textContent = KUERZEL[t.datum.getDay()];
       elWochentage.appendChild(kuerzel);
     });
 
@@ -1096,6 +1802,318 @@
 
     elWocheFuss.textContent = "Gestrichelt: Tagesziel von " + ziel + " Gläsern. Gespeichert werden die letzten " +
       VERLAUF_TAGE + " Tage.";
+  }
+
+  // ----- Daten mitnehmen und löschen ----------------------------------------
+
+  function datenStandSetzen(text) {
+    elDatenStand.textContent = text;
+  }
+
+  function exportDaten() {
+    return {
+      app: "trinkwecker",
+      version: 2,
+      erstellt: new Date().toISOString(),
+      stand: { datum: heute(), ml: ml, zugaben: zugaben },
+      einstellungen: {
+        ziel: ziel,
+        mlProGlas: mlProGlas,
+        thema: thema,
+        tagesgrenze: tagesgrenze,
+        wochenstart: wochenstart,
+        erinnerungAn: erinnerungAn,
+        intervall: intervall,
+        fensterVon: fensterVon,
+        fensterBis: fensterBis
+      },
+      verlauf: verlauf
+    };
+  }
+
+  function exportieren() {
+    var url = null;
+    try {
+      var blob = new Blob([JSON.stringify(exportDaten(), null, 2)], { type: "application/json" });
+      url = URL.createObjectURL(blob);
+      var verweis = document.createElement("a");
+      verweis.href = url;
+      verweis.download = "trinkwecker-export.json";
+      document.body.appendChild(verweis);
+      verweis.click();
+      document.body.removeChild(verweis);
+      datenStandSetzen("Export gestartet: trinkwecker-export.json");
+    } catch (e) {
+      datenStandSetzen("Der Export hat in diesem Browser nicht geklappt.");
+    } finally {
+      // Erst freigeben, wenn der Download angestoßen ist.
+      if (url) window.setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    }
+  }
+
+  // Eingelesene Dateien sind fremde Daten: erst prüfen, dann übernehmen. Was
+  // schiefgeht, endet in einer Meldung, nie in einer Ausnahme.
+  function importierenAus(text) {
+    var daten;
+    try {
+      daten = JSON.parse(text);
+    } catch (e) {
+      datenStandSetzen("Das ist keine gültige JSON-Datei. Es wurde nichts geändert.");
+      return;
+    }
+    if (!daten || typeof daten !== "object" || Array.isArray(daten)) {
+      datenStandSetzen("Die Datei hat nicht das erwartete Format. Es wurde nichts geändert.");
+      return;
+    }
+    if (daten.app !== "trinkwecker") {
+      datenStandSetzen("Diese Datei stammt nicht vom Trinkwecker. Es wurde nichts geändert.");
+      return;
+    }
+
+    var e = (daten.einstellungen && typeof daten.einstellungen === "object") ? daten.einstellungen : {};
+    var s = (daten.stand && typeof daten.stand === "object") ? daten.stand : {};
+    var version = zahlOderStandard(daten.version, 0, 99, 1);
+
+    ziel = zahlOderStandard(e.ziel, ZIEL_MIN, ZIEL_MAX, ZIEL_STANDARD);
+    mlProGlas = zahlOderStandard(e.mlProGlas, ML_MIN, ML_MAX, ML_STANDARD);
+    thema = (e.thema === "hell" || e.thema === "dunkel") ? e.thema : "auto";
+    tagesgrenze = zahlOderStandard(e.tagesgrenze, GRENZE_MIN, GRENZE_MAX, GRENZE_STANDARD);
+    wochenstart = e.wochenstart === "so" ? "so" : "mo";
+    intervall = zahlOderStandard(e.intervall, INTERVALL_MIN, INTERVALL_MAX, INTERVALL_STANDARD);
+    fensterVon = zahlOderStandard(e.fensterVon, VON_MIN, VON_MAX, VON_STANDARD);
+    fensterBis = zahlOderStandard(e.fensterBis, BIS_MIN, BIS_MAX, BIS_STANDARD);
+    if (fensterVon >= fensterBis) { fensterVon = VON_STANDARD; fensterBis = BIS_STANDARD; }
+    erinnerungAn = e.erinnerungAn === true;
+    naechste = 0;
+
+    // Ein Zählerstand von gestern gilt heute nicht mehr. Dateien der Fassung 1
+    // zählten Gläser, die werden hier ebenfalls in Milliliter umgerechnet.
+    var mlWert = version >= 2
+      ? zahlOderStandard(s.ml, 0, ML_TAG_MAX, 0)
+      : Math.min(zahlOderStandard(s.glaeser, 0, 99, 0) * mlProGlas, ML_TAG_MAX);
+    ml = (s.datum === heute()) ? mlWert : 0;
+    zugaben = (version >= 2 && s.datum === heute()) ? zugabenSaeubern(s.zugaben) : [];
+
+    verlauf = verlaufSaeubern(daten.verlauf);
+    if (version < 2) {
+      Object.keys(verlauf).forEach(function (tag) {
+        verlauf[tag] = Math.min(verlauf[tag] * mlProGlas, ML_TAG_MAX);
+      });
+    }
+    if (verlaufAufraeumen()) { /* zu Altes fliegt gleich mit raus */ }
+
+    speichern();
+    verlaufSpeichern();
+    timerStoppen();
+    erinnerungSynchronisieren();
+    zeichnen();
+
+    var anzahl = Object.keys(verlauf).length;
+    datenStandSetzen("Übernommen: Stand " + glaeserText(ml / mlProGlas) + " von " + ziel +
+      " Gläsern und " + tageText(anzahl) + " im Verlauf.");
+  }
+
+  function dateiEinlesen(datei) {
+    if (!datei) return;
+    if (typeof FileReader !== "function") {
+      datenStandSetzen("Dieser Browser kann keine Dateien einlesen.");
+      return;
+    }
+    var leser = new FileReader();
+    leser.onload = function () { importierenAus(String(leser.result)); };
+    leser.onerror = function () { datenStandSetzen("Die Datei ließ sich nicht lesen."); };
+    try {
+      leser.readAsText(datei);
+    } catch (e) {
+      datenStandSetzen("Die Datei ließ sich nicht lesen.");
+    }
+  }
+
+  function allesLoeschen() {
+    try {
+      // Erst sammeln, dann löschen: beim Entfernen verschieben sich die Plätze.
+      var namen = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var name = localStorage.key(i);
+        if (name && name.indexOf("trinkwecker") === 0) namen.push(name);
+      }
+      for (var k = 0; k < namen.length; k++) localStorage.removeItem(namen[k]);
+    } catch (e) {
+      speicherGeht = false;
+    }
+    timerStoppen();
+    statusText = "";
+    zugaben = [];
+    uebernehmen(); // Liest aus dem nun leeren Speicher, also die Standardwerte.
+    zeichnen();
+    datenStandSetzen("Alle Daten des Trinkweckers wurden gelöscht.");
+  }
+
+  // ----- Serie und Teilen ---------------------------------------------------
+
+  function tagVersetzt(tag, tage) {
+    var teile = tag.split("-");
+    var d = new Date(Number(teile[0]), Number(teile[1]) - 1, Number(teile[2]));
+    d.setDate(d.getDate() + tage);
+    return isoDatum(d);
+  }
+
+  // Alle Tage, an denen das Ziel steht. Heute zählt live mit, nicht aus dem Verlauf.
+  function erreichteTage() {
+    var menge = {};
+    var heuteText = heute();
+    Object.keys(verlauf).forEach(function (tag) {
+      if (verlauf[tag] >= zielMl()) menge[tag] = true;
+    });
+    if (ml >= zielMl()) menge[heuteText] = true;
+    else delete menge[heuteText];
+    return menge;
+  }
+
+  function serieBerechnen() {
+    var erreicht = erreichteTage();
+    var heuteText = heute();
+
+    // Die laufende Serie endet heute. Ist heute noch offen, zählt sie ab gestern
+    // weiter, damit sie nicht schon am Morgen als gerissen dasteht.
+    var aktuell = 0;
+    var tag = erreicht[heuteText] ? heuteText : tagVersetzt(heuteText, -1);
+    while (erreicht[tag]) {
+      aktuell++;
+      tag = tagVersetzt(tag, -1);
+    }
+
+    var tage = Object.keys(erreicht).sort();
+    var laengste = 0;
+    var lauf = 0;
+    var vorher = null;
+    for (var i = 0; i < tage.length; i++) {
+      lauf = (vorher !== null && tage[i] === tagVersetzt(vorher, 1)) ? lauf + 1 : 1;
+      if (lauf > laengste) laengste = lauf;
+      vorher = tage[i];
+    }
+
+    return { aktuell: aktuell, laengste: laengste, bekannt: Object.keys(verlauf).length };
+  }
+
+  function tageText(anzahl) {
+    return anzahl === 1 ? "1 Tag" : anzahl + " Tage";
+  }
+
+  function teilenText() {
+    var s = serieBerechnen();
+    if (s.aktuell >= 2) return s.aktuell + " Tage am Stück Trinkziel erreicht.";
+    if (s.aktuell === 1) return "Heute Trinkziel erreicht.";
+    return "Längste Serie: " + tageText(s.laengste) + " am Stück Trinkziel erreicht.";
+  }
+
+  // Adresse der App ohne Anker und Parameter, index.html darf weg.
+  function appLink() {
+    var href = String(location.href).split("#")[0].split("?")[0];
+    return href.replace(/index\.html$/, "");
+  }
+
+  function serieStandSetzen(text) {
+    if (standTimer !== null) {
+      window.clearTimeout(standTimer);
+      standTimer = null;
+    }
+    elSerieStand.textContent = text;
+    elSerieStand.hidden = !text;
+    if (text) {
+      standTimer = window.setTimeout(function () {
+        standTimer = null;
+        elSerieStand.textContent = "";
+        elSerieStand.hidden = true;
+      }, 6000);
+    }
+  }
+
+  function serieZeichnen() {
+    var s = serieBerechnen();
+
+    // Erst ab zwei bekannten Tagen und einer Serie, die etwas hergibt. Ein
+    // "0 Tage am Stück" motiviert niemanden.
+    if (s.bekannt < 2 || (s.aktuell < 2 && s.laengste < 2)) {
+      elSerie.hidden = true;
+      serieStandSetzen("");
+      return;
+    }
+    elSerie.hidden = false;
+
+    elSerieText.textContent = "";
+    if (s.aktuell >= 2 && s.aktuell === s.laengste) {
+      elSerieText.appendChild(zahlSpanne(s.aktuell));
+      elSerieText.appendChild(document.createTextNode(" Tage am Stück, das ist dein Bestwert."));
+    } else if (s.aktuell >= 2) {
+      elSerieText.appendChild(zahlSpanne(s.aktuell));
+      elSerieText.appendChild(document.createTextNode(" Tage am Stück Trinkziel erreicht. Längste Serie: " +
+        tageText(s.laengste) + "."));
+    } else if (s.aktuell === 1) {
+      elSerieText.appendChild(zahlSpanne(1));
+      elSerieText.appendChild(document.createTextNode(" Tag am Stück. Längste Serie: " +
+        tageText(s.laengste) + "."));
+    } else {
+      elSerieText.appendChild(document.createTextNode("Längste Serie: "));
+      elSerieText.appendChild(zahlSpanne(s.laengste));
+      elSerieText.appendChild(document.createTextNode(" Tage am Stück."));
+    }
+  }
+
+  function zahlSpanne(n) {
+    var span = document.createElement("span");
+    span.className = "serie-zahl";
+    span.textContent = String(n);
+    return span;
+  }
+
+  // Erst die Zwischenablage des Browsers, sonst der alte Weg über ein Textfeld.
+  function inZwischenablage(inhalt) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(inhalt);
+    }
+    return new Promise(function (erfuellt, abgelehnt) {
+      try {
+        var feld = document.createElement("textarea");
+        feld.value = inhalt;
+        feld.setAttribute("readonly", "");
+        feld.style.position = "fixed";
+        feld.style.top = "0";
+        feld.style.opacity = "0";
+        document.body.appendChild(feld);
+        feld.select();
+        var geklappt = document.execCommand("copy");
+        document.body.removeChild(feld);
+        if (geklappt) erfuellt(); else abgelehnt(new Error("copy"));
+      } catch (e) {
+        abgelehnt(e);
+      }
+    });
+  }
+
+  function kopieren(inhalt) {
+    inZwischenablage(inhalt).then(function () {
+      serieStandSetzen("In die Zwischenablage kopiert.");
+    }, function () {
+      serieStandSetzen("Teilen und Kopieren gehen in diesem Browser leider nicht.");
+    });
+  }
+
+  function teilen() {
+    var inhalt = teilenText();
+    var link = appLink();
+
+    if (navigator.share) {
+      navigator.share({ title: "Trinkwecker", text: inhalt, url: link }).then(function () {
+        serieStandSetzen(""); // Der Browser hat schon selbst quittiert.
+      }, function (fehler) {
+        // Ein Abbruch durch den Nutzer ist kein Fehler und braucht keine Meldung.
+        if (fehler && fehler.name === "AbortError") return;
+        kopieren(inhalt + " " + link);
+      });
+      return;
+    }
+    kopieren(inhalt + " " + link);
   }
 
   // ----- Erinnerungen -------------------------------------------------------
@@ -1163,16 +2181,15 @@
     timer = null;
     if (!erinnerungAn) return;
     // Still bleiben, wenn das Tagesziel schon steht oder das Fenster gerade zu ist.
-    if (stand < ziel && fensterOffen(new Date()) && !melden()) return;
+    if (ml < zielMl() && fensterOffen(new Date()) && !melden()) return;
     planen();
     zeichnen();
   }
 
   function melden() {
-    var offen = ziel - stand;
     try {
       new window.Notification("Zeit für ein Glas Wasser", {
-        body: "Noch " + offen + (offen === 1 ? " Glas" : " Gläser") + " bis zum Tagesziel.",
+        body: "Noch " + glaeserMitEinheit((zielMl() - ml) / mlProGlas) + " bis zum Tagesziel.",
         tag: "trinkwecker",
         lang: "de"
       });
@@ -1285,45 +2302,168 @@
         var d = new Date(naechste);
         satz += " Nächste Erinnerung um " + zweistellig(d.getHours()) + ":" + zweistellig(d.getMinutes()) + " Uhr.";
       }
-      if (stand >= ziel) satz += " Tagesziel steht, bis morgen bleibt es still.";
+      if (ml >= zielMl()) satz += " Tagesziel steht, bis morgen bleibt es still.";
       elErinnerungHinweis.textContent = satz;
     }
   }
 
-  function zeichnen() {
-    var prozent = Math.round(Math.min(stand / ziel, 1) * 100);
+  // ----- Willkommenskarte ---------------------------------------------------
 
-    elZahl.textContent = String(stand);
+  function willkommenGesehen() {
+    try {
+      return !!localStorage.getItem(ONBOARDING_SCHLUESSEL);
+    } catch (e) {
+      return true; // Ohne Speicher lieber nicht bei jedem Aufruf danach fragen.
+    }
+  }
+
+  function willkommenMerken() {
+    try {
+      localStorage.setItem(ONBOARDING_SCHLUESSEL, JSON.stringify({ gesehen: true, datum: heute() }));
+    } catch (e) {
+      // Kein Speicher: dann kommt die Karte beim nächsten Mal eben noch einmal.
+    }
+  }
+
+  function istIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPad ab iOS 13
+  }
+
+  function laeuftAlsApp() {
+    return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+      navigator.standalone === true;
+  }
+
+  // Alles, was in der Karte den Fokus bekommen kann. Ausgeblendete Schritte
+  // fallen heraus, weil sie keine Fläche haben.
+  function wkFokussierbare() {
+    var liste = elWillkommen.querySelectorAll("button, input, select, a[href]");
+    return Array.prototype.filter.call(liste, function (el) {
+      return !el.disabled && el.tabIndex >= 0 && el.getClientRects().length > 0;
+    });
+  }
+
+  function willkommenZeichnen() {
+    elWkZaehler.textContent = "Schritt " + wkSchritt + " von " + wkAbschnitte.length;
+    for (var i = 0; i < wkAbschnitte.length; i++) {
+      wkAbschnitte[i].hidden = (i + 1) !== wkSchritt;
+    }
+    elWkZurueck.disabled = wkSchritt === 1;
+    elWkWeiter.textContent = wkSchritt === wkAbschnitte.length ? "Los geht's" : "Weiter";
+
+    if (document.activeElement !== elWkZiel) elWkZiel.value = String(ziel);
+    elWkZielMinus.disabled = ziel <= ZIEL_MIN;
+    elWkZielPlus.disabled = ziel >= ZIEL_MAX;
+    elWkMenge.textContent = "Gläser, das sind " + nf(ziel * mlProGlas) + " ml am Tag";
+
+    if (!meldungenMoeglich()) {
+      elWkErinnerungen.disabled = true;
+      elWkErinnerungStand.textContent = "Dieser Browser kann keine Erinnerungen anzeigen. Der Zähler funktioniert wie gewohnt.";
+    } else if (erinnerungAn) {
+      elWkErinnerungen.disabled = true;
+      elWkErinnerungStand.textContent = "Erinnerungen sind an, " + intervallText(intervall) +
+        " zwischen " + uhrzeit(fensterVon) + " und " + uhrzeit(fensterBis) + " Uhr.";
+    } else {
+      elWkErinnerungen.disabled = false;
+      elWkErinnerungStand.textContent = statusText ||
+        "Du kannst das auch später in den Einstellungen einschalten.";
+    }
+
+    // Der Weg zum Homescreen ist je nach Gerät ein anderer.
+    elWkInstallieren.hidden = !installAufforderung;
+    if (laeuftAlsApp()) {
+      elWkInstallieren.hidden = true;
+      elWkInstallText.textContent = "Der Trinkwecker läuft schon als eigene App. Hier ist nichts weiter zu tun.";
+    } else if (istIOS()) {
+      elWkInstallText.textContent = "Auf iPhone und iPad: in Safari unten auf Teilen tippen, dann auf " +
+        "„Zum Home-Bildschirm“. Danach startet der Trinkwecker wie eine eigene App, auch ohne Netz.";
+    } else if (installAufforderung) {
+      elWkInstallText.textContent = "Dein Browser kann den Trinkwecker als App installieren. " +
+        "Danach startet er ohne Adressleiste und auch ohne Netz.";
+    } else {
+      elWkInstallText.textContent = "Im Browsermenü findest du „App installieren“ oder " +
+        "„Zum Startbildschirm hinzufügen“. Danach startet der Trinkwecker wie eine eigene App, auch ohne Netz.";
+    }
+  }
+
+  function wkSchrittSetzen(neu) {
+    wkSchritt = Math.max(1, Math.min(neu, wkAbschnitte.length));
+    willkommenZeichnen();
+    // Der Titel bekommt den Fokus, damit Vorlesehilfen den neuen Schritt ansagen.
+    wkTitel[wkSchritt - 1].focus();
+  }
+
+  function willkommenOeffnen() {
+    wkLetzterFokus = document.activeElement;
+    wkSchritt = 1;
+    willkommenZeichnen();
+    if (typeof elWillkommen.showModal === "function") {
+      if (!elWillkommen.open) elWillkommen.showModal();
+    } else {
+      elWillkommen.setAttribute("open", ""); // Alte Browser zeigen sie wenigstens an.
+    }
+    wkTitel[0].focus();
+  }
+
+  function willkommenSchliessen() {
+    willkommenMerken();
+    if (typeof elWillkommen.close === "function" && elWillkommen.open) elWillkommen.close();
+    else elWillkommen.removeAttribute("open");
+
+    // Zurück dorthin, wo der Fokus vor dem Öffnen war. Beim ersten Start gab es
+    // noch keine solche Stelle, dann landet er auf dem großen Plus.
+    var zurueck = elPlus;
+    if (wkLetzterFokus && wkLetzterFokus !== document.body &&
+        typeof wkLetzterFokus.focus === "function" && document.contains(wkLetzterFokus)) {
+      zurueck = wkLetzterFokus;
+    }
+    zurueck.focus();
+    wkLetzterFokus = null;
+  }
+
+  function zeichnen() {
+    var voll = zielMl();
+    var prozent = Math.round(Math.min(ml / voll, 1) * 100);
+
+    elZahl.textContent = glaeserText(ml / mlProGlas);
     elZiel.textContent = String(ziel);
     elGlasgroesseText.textContent = String(mlProGlas);
+    elLiter.textContent = literText(ml) + " getrunken";
     elFuellung.style.width = prozent + "%";
     elProzent.textContent = prozent + " % vom Tagesziel";
-    elMenge.textContent = nf(stand * mlProGlas) + " von " + nf(ziel * mlProGlas) + " ml";
-    elBalken.setAttribute("aria-valuemax", String(ziel));
-    elBalken.setAttribute("aria-valuenow", String(Math.min(stand, ziel)));
-    elMinus.disabled = stand === 0;
-    elPlus.disabled = stand >= STAND_MAX;
+    elMenge.textContent = nf(ml) + " von " + nf(voll) + " ml";
+    elBalken.setAttribute("aria-valuemax", String(voll));
+    elBalken.setAttribute("aria-valuenow", String(Math.min(ml, voll)));
+    elBalken.setAttribute("aria-valuetext", literText(ml) + " von " + literText(voll));
+    elMinus.disabled = ml === 0;
+    elPlus.disabled = ml >= ML_TAG_MAX;
+    elHalb.disabled = ml >= ML_TAG_MAX;
+    elFlasche.disabled = ml >= ML_TAG_MAX;
+    themaAnwenden();
     glaeserZeichnen();
     panelZeichnen();
     erinnerungZeichnen();
     wocheZeichnen();
+    serieZeichnen();
+    willkommenZeichnen();
 
-    var offen = ziel - stand;
-    if (stand === 0) {
+    var offenMl = voll - ml;
+    var offenGlaeser = offenMl / mlProGlas;
+    if (ml === 0) {
       elHinweis.textContent = "Auf geht's, das erste Glas wartet.";
       elHinweis.className = "hinweis";
-    } else if (offen > 1) {
-      elHinweis.textContent = "Noch " + offen + " Gläser bis zum Ziel.";
+    } else if (offenGlaeser > 1) {
+      elHinweis.textContent = "Noch " + glaeserMitEinheit(offenGlaeser) + " bis zum Ziel.";
       elHinweis.className = "hinweis";
-    } else if (offen === 1) {
-      elHinweis.textContent = "Nur noch ein Glas, fast geschafft.";
+    } else if (offenMl > 0) {
+      elHinweis.textContent = "Nur noch " + glaeserMitEinheit(offenGlaeser) + ", fast geschafft.";
       elHinweis.className = "hinweis";
-    } else if (stand === ziel) {
+    } else if (offenMl === 0) {
       elHinweis.textContent = "Tagesziel geschafft, super gemacht!";
       elHinweis.className = "hinweis geschafft";
     } else {
-      var extra = stand - ziel;
-      elHinweis.textContent = "Ziel übertroffen: " + extra + (extra === 1 ? " Glas" : " Gläser") + " extra.";
+      elHinweis.textContent = "Ziel übertroffen: " + glaeserMitEinheit(-offenGlaeser) + " extra.";
       elHinweis.className = "hinweis geschafft";
     }
 
@@ -1336,8 +2476,33 @@
     }
   }
 
-  function setzen(neu) {
-    stand = Math.max(0, Math.min(neu, STAND_MAX));
+  // Jede Zugabe wandert zusätzlich auf einen kleinen Stapel, damit sich genau
+  // die letzte wieder zurücknehmen lässt.
+  function zugeben(menge) {
+    menge = Math.round(menge);
+    if (!isFinite(menge) || menge <= 0) return;
+    var neu = Math.min(ml + menge, ML_TAG_MAX);
+    if (neu === ml) return; // Am Anschlag gibt es nichts mehr zu buchen.
+    zugaben.push(neu - ml);
+    if (zugaben.length > ZUGABEN_MAX) zugaben.shift();
+    ml = neu;
+    speichern();
+    verlaufMerken();
+    zeichnen();
+  }
+
+  function letzteZurueck() {
+    // Stände aus der alten Fassung haben keinen Stapel: dort geht ein Glas zurück.
+    var menge = zugaben.length ? zugaben.pop() : mlProGlas;
+    ml = Math.max(0, ml - menge);
+    speichern();
+    verlaufMerken();
+    zeichnen();
+  }
+
+  function zuruecksetzen() {
+    ml = 0;
+    zugaben = [];
     speichern();
     verlaufMerken();
     zeichnen();
@@ -1364,10 +2529,12 @@
       : Math.ceil(wert / schritt) * schritt - schritt;
   }
 
-  elPlus.addEventListener("click", function () { setzen(stand + 1); });
-  elMinus.addEventListener("click", function () { setzen(stand - 1); });
+  elPlus.addEventListener("click", function () { zugeben(mlProGlas); });
+  elHalb.addEventListener("click", function () { zugeben(Math.round(mlProGlas / 2)); });
+  elFlasche.addEventListener("click", function () { zugeben(FLASCHE_ML); });
+  elMinus.addEventListener("click", letzteZurueck);
   elReset.addEventListener("click", function () {
-    if (stand === 0 || window.confirm("Zähler für heute auf 0 zurücksetzen?")) setzen(0);
+    if (ml === 0 || window.confirm("Zähler für heute auf 0 zurücksetzen?")) zuruecksetzen();
   });
 
   elSchalter.addEventListener("click", function () {
@@ -1424,6 +2591,111 @@
     erinnerungGeaendert();
   });
 
+  // Ein Wechsel der Grenze verschiebt den heutigen Tag. Erst wird der aktuelle
+  // Stand unter dem bisherigen Tag festgeschrieben, dann die Grenze allein
+  // gespeichert und alles neu eingelesen. Sonst würde der Stand von gestern in
+  // den neuen Tag mitwandern.
+  elTagesgrenze.addEventListener("change", function () {
+    speichern();
+    feldSchreiben("tagesgrenze", zahlOderStandard(elTagesgrenze.value, GRENZE_MIN, GRENZE_MAX, GRENZE_STANDARD));
+    uebernehmen();
+    erinnerungSynchronisieren();
+    zeichnen();
+  });
+
+  for (var ws = 0; ws < wochenstartFelder.length; ws++) {
+    wochenstartFelder[ws].addEventListener("change", function () {
+      if (!this.checked) return;
+      wochenstart = this.value === "so" ? "so" : "mo";
+      speichern();
+      zeichnen();
+    });
+  }
+
+  for (var t = 0; t < themaFelder.length; t++) {
+    themaFelder[t].addEventListener("change", function () {
+      if (this.checked) themaSetzen(this.value);
+    });
+  }
+
+  // Wechselt das Gerät bei Auto die Seite, folgen die Farben über CSS von selbst,
+  // die Leistenfarbe muss nachgezogen werden.
+  if (window.matchMedia) {
+    var systemHell = window.matchMedia("(prefers-color-scheme: light)");
+    var systemGeaendert = function () { if (thema === "auto") themaFarbeSetzen(); };
+    if (systemHell.addEventListener) systemHell.addEventListener("change", systemGeaendert);
+    else if (systemHell.addListener) systemHell.addListener(systemGeaendert);
+  }
+
+  elExport.addEventListener("click", exportieren);
+  elImport.addEventListener("click", function () { elImportFeld.click(); });
+  elImportFeld.addEventListener("change", function () {
+    var datei = elImportFeld.files && elImportFeld.files[0];
+    dateiEinlesen(datei);
+    elImportFeld.value = ""; // Dieselbe Datei soll sich erneut wählen lassen.
+  });
+  elLoeschen.addEventListener("click", function () {
+    if (window.confirm("Wirklich alle Daten des Trinkweckers auf diesem Gerät löschen? " +
+        "Zähler, Verlauf und Einstellungen sind dann weg.")) {
+      allesLoeschen();
+    }
+  });
+
+  elTeilen.addEventListener("click", teilen);
+  elEinfuehrung.addEventListener("click", willkommenOeffnen);
+  elWkSchliessen.addEventListener("click", willkommenSchliessen);
+  elWkZurueck.addEventListener("click", function () { wkSchrittSetzen(wkSchritt - 1); });
+  elWkWeiter.addEventListener("click", function () {
+    if (wkSchritt >= wkAbschnitte.length) willkommenSchliessen();
+    else wkSchrittSetzen(wkSchritt + 1);
+  });
+
+  elWkZielMinus.addEventListener("click", function () { zielSetzen(raste(ziel, 1, -1)); });
+  elWkZielPlus.addEventListener("click", function () { zielSetzen(raste(ziel, 1, 1)); });
+  tippen(elWkZiel, ZIEL_MIN, ZIEL_MAX, zielSetzen);
+
+  // Die Erlaubnis wird auch hier nur direkt aus dem Klick heraus erfragt.
+  elWkErinnerungen.addEventListener("click", function () { einschalten(); });
+
+  elWkInstallieren.addEventListener("click", function () {
+    if (!installAufforderung) return;
+    var aufforderung = installAufforderung;
+    installAufforderung = null; // Der Browser bietet sie nur einmal an.
+    aufforderung.prompt();
+    willkommenZeichnen();
+  });
+
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); // Nicht sofort fragen, sondern im dritten Schritt.
+    installAufforderung = e;
+    willkommenZeichnen();
+  });
+
+  // Escape schließt die Karte, Tab bleibt darin gefangen.
+  elWillkommen.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      willkommenSchliessen();
+      return;
+    }
+    if (e.key !== "Tab") return;
+
+    var felder = wkFokussierbare();
+    if (!felder.length) return;
+    var erstes = felder[0];
+    var letztes = felder[felder.length - 1];
+    if (e.shiftKey && document.activeElement === erstes) {
+      e.preventDefault();
+      letztes.focus();
+    } else if (!e.shiftKey && document.activeElement === letztes) {
+      e.preventDefault();
+      erstes.focus();
+    }
+  });
+
+  // Falls die Karte auf anderem Weg zugeht, gilt sie trotzdem als gesehen.
+  elWillkommen.addEventListener("close", willkommenMerken);
+
   // Tab lag über Mitternacht offen oder wurde in einem anderen Tab geändert.
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden) { uebernehmen(); erinnerungSynchronisieren(); zeichnen(); }
@@ -1443,11 +2715,31 @@
   elMlEingabe.step = String(ML_SCHRITT);
   stundenFuellen(elVon, VON_MIN, VON_MAX);
   stundenFuellen(elBis, BIS_MIN, BIS_MAX);
+  stundenFuellen(elTagesgrenze, GRENZE_MIN, GRENZE_MAX);
+  elTagesgrenze.options[0].textContent = "00:00 (Mitternacht)";
 
   uebernehmen();
+  // Stammt der Speicher aus der alten Fassung, wird die Umrechnung sofort
+  // festgeschrieben, damit sie nicht bei jedem Laden erneut passiert.
+  if (alteFassung) {
+    speichern();
+    verlaufSpeichern();
+    alteFassung = false;
+  }
   if (verlaufAufraeumen()) verlaufSpeichern();
   erinnerungSynchronisieren();
   zeichnen();
+
+  // Der Link bekommt seine Adresse erst hier, aus der Konstanten oben.
+  if (SPENDEN_URL) {
+    elUnterstuetzen.href = SPENDEN_URL;
+  } else {
+    elUnterstuetzen.hidden = true;
+    elUnterstuetzenTrenner.hidden = true;
+  }
+
+  // Beim allerersten Start führt die Karte kurz durch die drei Punkte.
+  if (!willkommenGesehen()) willkommenOeffnen();
 })();
 </script>
 
