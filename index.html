@@ -295,6 +295,7 @@
     background: transparent;
     color: var(--text-leise);
     padding: 9px 16px;
+    min-height: 44px;
     border-radius: 999px;
     font-size: .85rem;
     cursor: pointer;
@@ -350,8 +351,8 @@
   }
 
   .stepper-knopf {
-    width: 30px;
-    height: 30px;
+    width: 44px;
+    height: 44px;
     flex: none;
     border: 1px solid var(--card-rand);
     border-radius: 50%;
@@ -369,6 +370,7 @@
 
   .stepper-feld {
     width: 58px;
+    min-height: 44px;
     padding: 6px 4px;
     border: 1px solid var(--card-rand);
     border-radius: 8px;
@@ -425,8 +427,11 @@
   }
 
   .segment span {
-    display: block;
-    padding: 6px 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 14px;
     border-radius: 999px;
     font-size: .8rem;
     color: var(--text-leise);
@@ -463,6 +468,8 @@
   .schieber {
     display: inline-flex;
     align-items: center;
+    min-height: 44px;
+    padding: 9px 0;
     cursor: pointer;
   }
 
@@ -512,6 +519,7 @@
   }
 
   .auswahl {
+    min-height: 44px;
     padding: 6px 10px;
     border: 1px solid var(--card-rand);
     border-radius: 8px;
@@ -737,8 +745,8 @@
   }
 
   .willkommen-schliessen {
-    width: 32px;
-    height: 32px;
+    width: 44px;
+    height: 44px;
     flex: none;
     border: 1px solid var(--card-rand);
     border-radius: 50%;
@@ -1046,7 +1054,7 @@
         <p class="einwilligung" id="einwilligung">
           Sobald du den Schalter umlegst, fragt dein Browser einmal nach der Erlaubnis für
           Benachrichtigungen. Sie wird ausschließlich dafür genutzt, dich im gewählten
-          Zeitfenster ans Trinken zu erinnern. Nichts davon verlässt dein Gerät. Du kannst
+          Zeitfenster ans Trinken zu erinnern, solange der Trinkwecker geöffnet ist. Nichts davon verlässt dein Gerät. Du kannst
           die Erlaubnis jederzeit in den Browsereinstellungen widerrufen oder hier einfach
           wieder ausschalten.
         </p>
@@ -1078,6 +1086,7 @@
             <select class="auswahl" id="fenster-bis"></select>
           </div>
         </div>
+        <p class="feld-hinweis">Das Fenster liegt innerhalb eines Tages, von vor bis. Passt ein Wert nicht, rückt der andere automatisch nach.</p>
 
         <p class="feld-hinweis" id="erinnerung-hinweis"></p>
       </div>
@@ -1188,7 +1197,8 @@
         <h3 class="wk-titel" id="wk-titel-2" tabindex="-1">Erinnerungen</h3>
         <p class="wk-text">
           Der Trinkwecker kann dich in einem Zeitfenster deiner Wahl ans Trinken erinnern,
-          voreingestellt sind 8 bis 20 Uhr. Dein Browser fragt dafür einmal um Erlaubnis. Sie
+          voreingestellt sind 8 bis 20 Uhr. Die Erinnerungen kommen, solange der Trinkwecker
+          geöffnet ist, auch im Hintergrund-Tab. Dein Browser fragt dafür einmal um Erlaubnis. Sie
           wird nur für diese Erinnerungen genutzt und ist jederzeit widerrufbar.
         </p>
         <button class="wk-knopf" id="wk-erinnerungen" type="button">Erinnerungen einschalten</button>
@@ -2297,7 +2307,7 @@
       // Das Warum steht schon über dem Schalter, hier genügt der Zustand.
       elErinnerungHinweis.textContent = "Erinnerungen sind zurzeit aus.";
     } else {
-      var satz = "Aktiv: " + intervallText(intervall) + " zwischen " + uhrzeit(fensterVon) + " und " + uhrzeit(fensterBis) + " Uhr.";
+      var satz = "Aktiv: " + intervallText(intervall) + " zwischen " + uhrzeit(fensterVon) + " und " + uhrzeit(fensterBis) + " Uhr, solange der Trinkwecker geöffnet ist.";
       if (naechste > Date.now()) {
         var d = new Date(naechste);
         satz += " Nächste Erinnerung um " + zweistellig(d.getHours()) + ":" + zweistellig(d.getMinutes()) + " Uhr.";
