@@ -2777,5 +2777,18 @@
   });
 })();
 </script>
+<script>
+// Anonymer Nutzungszähler: ein Aufruf je App-Start, keine IP, kein Cookie,
+// keine Kennung (dritte Stufe der Messkette Aufrufe → Klicks → Nutzung).
+// Lokal geöffnete Kopien zählen nicht mit, sonst verfälscht jedes Testen die Zahlen.
+(function () {
+  "use strict";
+  var h = window.location.hostname;
+  if (!h || h === "localhost" || h === "127.0.0.1") return;
+  fetch("https://klickmill.app/api/ping?app=trinkwecker").catch(function () {
+    // Offline oder blockiert: die App funktioniert unverändert.
+  });
+})();
+</script>
 </body>
 </html>
