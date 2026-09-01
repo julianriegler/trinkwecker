@@ -241,6 +241,42 @@
     border: 2px solid var(--card-rand);
     border-radius: 3px 3px 7px 7px;
     transition: background .25s ease, border-color .25s ease;
+    /* Seit 1.9.2026 ein Knopf statt reiner Anzeige: "tippe einmal aufs Glas"
+       stand in Skripten und Captions, ohne dass es die Handlung gab. */
+    padding: 0;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    position: relative;
+    cursor: pointer;
+  }
+
+  /* Das Glas selbst ist 13 mal 22 Pixel und damit als Ziel zu klein. Diese
+     unsichtbare Flaeche vergroessert nur den Treffer, nicht das Bild, auf
+     gemessene 19 mal 44 Pixel.
+     ACHTUNG beim Anfassen: Bezugsrahmen eines absolut gesetzten ::after ist die
+     PADDING-Box, nicht die Border-Box. Der 2-Pixel-Rand des Glases zaehlt also
+     nicht mit, jeder Wert hier braucht 2 Pixel Zuschlag je Seite. -13/-5 ergibt
+     deshalb 11 bzw. 3 Pixel echten Ueberstand. Seitlich bewusst nur 3, sonst
+     ueberlappen sich Nachbarglaeser (Abstand 7 Pixel, bleibt auch bei 20
+     Glaesern fix, weil Flex-Gaps nicht schrumpfen). */
+  .glas::after {
+    content: "";
+    position: absolute;
+    inset: -13px -5px;
+  }
+
+  .glas:disabled {
+    cursor: default;
+  }
+
+  .glas:not(:disabled):hover {
+    border-color: var(--mint);
+  }
+
+  .glas:focus-visible {
+    outline: 2px solid var(--mint);
+    outline-offset: 3px;
   }
 
   .glas.voll {
@@ -960,7 +996,7 @@
     <p class="prozent" id="prozent">0 % vom Tagesziel</p>
     <p class="menge" id="menge">0 von 2.000 ml</p>
 
-    <div class="glaeser" id="glaeser" aria-hidden="true"></div>
+    <div class="glaeser" id="glaeser" role="group" aria-label="Gläser für heute, tippe ein Glas um bis dorthin aufzufüllen"></div>
 
     <button class="plus" id="plus" aria-label="Ein Glas Wasser hinzufügen">+</button>
 
@@ -1701,11 +1737,23 @@
     var rest = ml / mlProGlas - voll;
     elGlaeser.textContent = "";
     for (var i = 0; i < ziel; i++) {
-      var glas = document.createElement("span");
+      var glas = document.createElement("button");
+      glas.type = "button";
       var klasse = "glas";
-      if (i < voll) klasse += " voll";
+      var erreicht = i < voll;
+      if (erreicht) klasse += " voll";
       else if (i === voll && rest >= 0.25) klasse += " halb";
       glas.className = klasse;
+      // Nur vorwaerts: ein erreichtes Glas ist kein Ziel mehr. So kann ein
+      // Fehltipper den Tagesstand nicht zurueckdrehen.
+      glas.disabled = erreicht;
+      glas.setAttribute("data-glas", String(i + 1));
+      glas.setAttribute(
+        "aria-label",
+        erreicht
+          ? "Glas " + (i + 1) + " ist schon getrunken"
+          : "Bis Glas " + (i + 1) + " auffüllen",
+      );
       elGlaeser.appendChild(glas);
     }
   }
@@ -2540,6 +2588,28 @@
   }
 
   elPlus.addEventListener("click", function () { zugeben(mlProGlas); });
+
+  // "Tippe einmal aufs Glas": ein Klick auf das naechste leere Glas ist genau
+  // ein Glas, ein Klick weiter vorn fuellt bis dorthin auf. Ein bereits
+  // erreichtes Glas ist disabled, zurueck geht nur ueber "Letzte Zugabe zurueck".
+  // Ein Zuhoerer am Behaelter statt an jedem Glas, damit das Neuzeichnen in
+  // glaeserZeichnen() keine Zuhoerer verliert.
+  elGlaeser.addEventListener("click", function (ereignis) {
+    var knopf = ereignis.target.closest ? ereignis.target.closest(".glas") : null;
+    if (!knopf || knopf.disabled) return;
+    var nummer = parseInt(knopf.getAttribute("data-glas"), 10);
+    if (!isFinite(nummer) || nummer < 1) return;
+    var zielMenge = nummer * mlProGlas;
+    if (zielMenge <= ml) return;
+    zugeben(zielMenge - ml);
+    // glaeserZeichnen() ersetzt alle Knoepfe, damit ist der angeklickte weg und
+    // der Fokus faellt auf <body>. Wer mit der Tastatur arbeitet, finge sonst
+    // nach jedem Glas wieder ganz oben im Dokument an. Deshalb auf das naechste
+    // noch offene Glas weiterreichen, und wenn keins mehr offen ist, auf Plus.
+    // Sichtbar wird der Rahmen nur bei Tastatur, weil oben :focus-visible steht.
+    var naechstes = elGlaeser.querySelector(".glas:not(:disabled)");
+    (naechstes || elPlus).focus();
+  });
   elHalb.addEventListener("click", function () { zugeben(Math.round(mlProGlas / 2)); });
   elFlasche.addEventListener("click", function () { zugeben(FLASCHE_ML); });
   elMinus.addEventListener("click", letzteZurueck);
