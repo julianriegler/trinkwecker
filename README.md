@@ -369,10 +369,15 @@ gewerblich auftritt, sollte sie vor dem Livegang prüfen lassen.
 
 ## Deploy
 
-Das Repository liegt auf `github.com/julianriegler/trinkwecker`. Sobald der erste
-Push auf `main` durch ist und der Pages-Schalter steht, ist die App erreichbar unter:
+Die App ist erreichbar unter:
 
-**https://julianriegler.github.io/trinkwecker/**
+**https://trinkwecker.klickmill.app/**
+
+Die Adresse ist als eigene Domain in GitHub Pages hinterlegt (Datei `CNAME` im
+Wurzelverzeichnis plus ein CNAME-Eintrag `trinkwecker` bei klickmill.app, der auf
+GitHub Pages zeigt). Grund: die Standardadresse von GitHub Pages trägt den
+Benutzernamen des Kontos, und der darf in keiner Adressleiste auftauchen. Die
+alte Standardadresse leitet dauerhaft auf die eigene Domain um.
 
 ### GitHub Pages
 
@@ -400,12 +405,9 @@ Einmalig nötig:
 3. Der erste Lauf startet mit dem nächsten Push, von Hand geht er über den Reiter
    **Actions**, Workflow **GitHub Pages**, **Run workflow**.
 
-Die Seite liegt danach unter `https://julianriegler.github.io/trinkwecker/`.
-
-Hieße das Repository `julianriegler.github.io`, entfiele der Unterordner. Beides
-funktioniert: alle Pfade in
+Die Seite liegt danach unter `https://trinkwecker.klickmill.app/`. Alle Pfade in
 der App sind relativ, Service Worker und Manifest richten sich nach dem Ordner, in
-dem sie liegen. Die genaue Adresse steht nach dem Lauf auch in der Zusammenfassung
+dem sie liegen, deshalb war für die eigene Domain keine Änderung im Code nötig. Die genaue Adresse steht nach dem Lauf auch in der Zusammenfassung
 der Action und unter Settings, Pages.
 
 Zwei Dinge nach einem Deploy:
