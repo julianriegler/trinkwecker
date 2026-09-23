@@ -905,6 +905,20 @@
     color: var(--text-leise);
   }
 
+  /* Beta-Kasten: Formularfelder im Stil der Karte, Ziele mindestens 44 px hoch. */
+  .beta-formular { display: grid; gap: 10px; margin-top: 14px; }
+  .beta-label { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+  .beta-feld {
+    width: 100%; box-sizing: border-box; min-height: 44px; padding: 10px 12px;
+    font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--rand-stark); border-radius: 12px;
+  }
+  .beta-feld::placeholder { color: var(--text-schwach); }
+  .beta-feld:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
+  .beta-stand { margin: 0; font-size: 0.9rem; }
+  .beta-klein { margin: 0; font-size: 0.8rem; }
+  .beta-klein a { color: inherit; }
+
   .seitenfuss {
     display: flex;
     flex-wrap: wrap;
@@ -998,17 +1012,17 @@
 
     <div class="glaeser" id="glaeser" role="group" aria-label="Gläser für heute, tippe ein Glas um bis dorthin aufzufüllen"></div>
 
-    <button class="plus" id="plus" aria-label="Ein Glas Wasser hinzufügen">+</button>
+    <button class="plus" id="plus" aria-label="Ein Glas Wasser hinzufügen" data-ev="glas">+</button>
 
     <div class="zugaben">
-      <button class="klein" id="halb" type="button" aria-label="Ein halbes Glas hinzufügen">+ ½ Glas</button>
-      <button class="klein" id="flasche" type="button" aria-label="Eine große Flasche mit 500 Millilitern hinzufügen">+ Flasche 0,5 l</button>
+      <button class="klein" id="halb" type="button" aria-label="Ein halbes Glas hinzufügen" data-ev="halbes_glas">+ ½ Glas</button>
+      <button class="klein" id="flasche" type="button" aria-label="Eine große Flasche mit 500 Millilitern hinzufügen" data-ev="flasche">+ Flasche 0,5 l</button>
     </div>
 
     <div class="neben-aktionen">
       <button class="klein" id="minus">Letzte Zugabe zurück</button>
       <button class="klein" id="reset">Tag zurücksetzen</button>
-      <button class="klein schalter" id="schalter" aria-expanded="false" aria-controls="einstellungen">Einstellungen</button>
+      <button class="klein schalter" id="schalter" aria-expanded="false" aria-controls="einstellungen" data-ev="einstellungen">Einstellungen</button>
     </div>
 
     <div class="einstellungen" id="einstellungen" hidden>
@@ -1165,9 +1179,37 @@
     <div class="serie" id="serie" hidden>
       <div class="serie-zeile">
         <p class="serie-text" id="serie-text"></p>
-        <button class="klein" id="teilen" type="button">Teilen</button>
+        <button class="klein" id="teilen" type="button" data-ev="teilen_serie">Teilen</button>
       </div>
       <p class="serie-stand" id="serie-stand" role="status" aria-live="polite" hidden></p>
+    </div>
+  </section>
+
+  <section class="hinweis-karte beta" aria-labelledby="beta-titel">
+    <h2 class="hinweis-titel" id="beta-titel">Du testest den Trinkwecker mit</h2>
+    <p>
+      Der Trinkwecker ist eine <strong>Testfassung</strong>. Er läuft im Browser, damit wir ohne
+      Umweg über einen App-Store schnell verbessern können. In den Play Store und den App Store
+      geht er erst, wenn du und viele andere ihn gern nutzen.
+    </p>
+    <p>
+      Wenn er dir hilft: <strong>teile ihn</strong>. Und sag uns, was fehlt oder stört. So bauen
+      wir ihn mit dir zusammen weiter.
+    </p>
+    <div class="beta-formular">
+      <button class="klein" id="beta-teilen" type="button" data-ev="teilen_app">App teilen</button>
+      <label class="beta-label" for="beta-text">Dein Feedback</label>
+      <textarea class="beta-feld" id="beta-text" rows="3" maxlength="1000"
+        placeholder="Was fehlt dir, was stört, was gefällt?"></textarea>
+      <label class="beta-label" for="beta-kontakt">Kontakt für Rückfragen (freiwillig)</label>
+      <input class="beta-feld" id="beta-kontakt" type="text" maxlength="200" autocomplete="off"
+        placeholder="E-Mail oder leer lassen">
+      <button class="klein" id="beta-senden" type="button">Feedback senden</button>
+      <p class="beta-stand" id="beta-stand" role="status" aria-live="polite" hidden></p>
+      <p class="beta-klein">
+        Dein Feedback geht an uns (klickmill.app), ohne IP-Adresse und ohne Kennung. Mehr dazu
+        im <a href="datenschutz.html">Datenschutz</a>.
+      </p>
     </div>
   </section>
 
@@ -1218,6 +1260,12 @@
         <p class="wk-text">
           Wie viele Gläser möchtest du am Tag trinken? Acht sind voreingestellt und nur ein
           Richtwert. Ändern kannst du das später jederzeit in den Einstellungen.
+        </p>
+        <p class="wk-text">
+          Noch etwas vorab: Du nutzt eine Testfassung. Der Trinkwecker läuft im Browser, damit
+          wir ihn schnell verbessern können. In die App-Stores kommt er erst, wenn du und viele
+          andere ihn gern nutzen. Unten auf der Seite kannst du ihn teilen und uns sagen, was
+          fehlt.
         </p>
         <div class="wk-feld">
           <div class="stepper">
@@ -2848,16 +2896,97 @@
 })();
 </script>
 <script>
-// Anonymer Nutzungszähler: ein Aufruf je App-Start, keine IP, kein Cookie,
-// keine Kennung (dritte Stufe der Messkette Aufrufe → Klicks → Nutzung).
-// Lokal geöffnete Kopien zählen nicht mit, sonst verfälscht jedes Testen die Zahlen.
+// Anonyme Zähler und Feedback (Messkette Aufrufe → Klicks → Nutzung → Aktionen):
+// ein Aufruf je App-Start, dazu je Aktion der Name des Knopfs (data-ev), keine
+// IP, kein Cookie, keine Kennung. Lokal geöffnete Kopien zählen nicht mit, sonst
+// verfälscht jedes Testen die Zahlen.
 (function () {
   "use strict";
   var h = window.location.hostname;
-  if (!h || h === "localhost" || h === "127.0.0.1") return;
-  fetch("https://klickmill.app/api/ping?app=trinkwecker").catch(function () {
-    // Offline oder blockiert: die App funktioniert unverändert.
+  var lokal = !h || h === "localhost" || h === "127.0.0.1";
+  var BASIS = "https://klickmill.app";
+
+  function ping(ev) {
+    if (lokal) return;
+    var url = BASIS + "/api/ping?app=trinkwecker" + (ev ? "&ev=" + encodeURIComponent(ev) : "");
+    fetch(url).catch(function () {
+      // Offline oder blockiert: die App funktioniert unverändert.
+    });
+  }
+  ping();
+
+  // Ein Handler für alle Aktionen: jeder Knopf mit data-ev meldet seinen Namen.
+  document.addEventListener("click", function (e) {
+    var el = e.target && e.target.closest ? e.target.closest("[data-ev]") : null;
+    if (!el) return;
+    // Der Einstellungs-Schalter zählt nur das Öffnen, nicht das Schließen;
+    // sein eigener Handler hat aria-expanded hier schon umgestellt.
+    if (el.id === "schalter" && el.getAttribute("aria-expanded") !== "true") return;
+    ping(el.getAttribute("data-ev"));
   });
+
+  var stand = document.getElementById("beta-stand");
+  function melde(text) {
+    if (!stand) return;
+    stand.textContent = text;
+    stand.hidden = false;
+  }
+
+  var teilenApp = document.getElementById("beta-teilen");
+  if (teilenApp) {
+    teilenApp.addEventListener("click", function () {
+      // Der Kurzlink zählt Klicks und leitet in die App, deshalb er statt der Rohadresse.
+      var link = "https://klickmill.app/go/trinkwecker?s=teilen";
+      var text = "Der Trinkwecker erinnert mich ans Trinken. Läuft im Browser, ohne Konto.";
+      if (navigator.share) {
+        navigator.share({ title: "Trinkwecker", text: text, url: link }).catch(function () {});
+      } else if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(
+          function () { melde("Link kopiert: " + link); },
+          function () { melde("Link zum Weitergeben: " + link); }
+        );
+      } else {
+        melde("Link zum Weitergeben: " + link);
+      }
+    });
+  }
+
+  var senden = document.getElementById("beta-senden");
+  var feld = document.getElementById("beta-text");
+  var kontakt = document.getElementById("beta-kontakt");
+  if (senden && feld && kontakt) {
+    senden.addEventListener("click", function () {
+      var text = (feld.value || "").trim();
+      if (text.length < 3) {
+        melde("Schreib bitte ein, zwei Sätze, dann können wir etwas damit anfangen.");
+        feld.focus();
+        return;
+      }
+      if (lokal) {
+        melde("Lokale Kopie: Feedback wird nicht gesendet.");
+        return;
+      }
+      senden.disabled = true;
+      fetch(BASIS + "/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          app: "trinkwecker",
+          text: text.slice(0, 1000),
+          kontakt: (kontakt.value || "").trim().slice(0, 200)
+        })
+      }).then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        feld.value = "";
+        kontakt.value = "";
+        melde("Danke, dein Feedback ist angekommen.");
+      }).catch(function () {
+        melde("Senden hat nicht geklappt. Versuch es später noch einmal.");
+      }).then(function () {
+        senden.disabled = false;
+      });
+    });
+  }
 })();
 </script>
 </body>
