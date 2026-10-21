@@ -2,7 +2,7 @@
 
 // Bei jeder Änderung an den Dateien hochzählen. Der neue Name legt einen neuen
 // Cache an, und beim activate fliegen alle Caches mit anderem Namen raus.
-var VERSION = "trinkwecker-v14";
+var VERSION = "trinkwecker-v15";
 
 // Alles, was die App zum Starten braucht. Die beiden Rechtsseiten sind dabei,
 // damit auch die Links aus der Fußzeile offline funktionieren.

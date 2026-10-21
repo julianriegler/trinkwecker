@@ -94,29 +94,12 @@ Berechtigung, erklärt ein Absatz, wofür die Erlaubnis genutzt wird und dass si
 jederzeit im Browser widerrufbar ist. Der Schalter verweist per `aria-describedby`
 auf diesen Text, damit auch Screenreader ihn vor der Abfrage vorlesen.
 
-## Unterstützen
+## Kein Spendenlink
 
-In der Fußzeile steht neben Impressum und Datenschutz ein zurückhaltender Link
-**Unterstützen**. Die Adresse dahinter ist ein **Platzhalter** und steht als klar
-markierte Konstante am Anfang des Skripts in `index.html`:
-
-```js
-var SPENDEN_URL = "https://example.org/trinkwecker-unterstuetzen";
-```
-
-Dort die eigene Spendenseite eintragen, etwa bei Ko-fi, Liberapay, PayPal oder einem
-Verein. Ein **leerer Wert blendet den Link samt Trennzeichen aus**, wer nichts
-sammeln will, ändert also nur diese eine Zeile.
-
-Es gibt keine Bezahlschranke: die App ist vollständig nutzbar, der Link fragt nur.
-
-**Datenschutz:** Von der Spendenseite ist hier nichts eingebunden, kein Skript, kein
-Bild, kein Zählpixel, kein Rahmen. Solange niemand klickt, entsteht keine Verbindung
-dorthin. Der Link trägt `target="_blank"` und `rel="noopener noreferrer"`, gibt also
-weder die Herkunftsseite noch Zugriff auf das eigene Fenster weiter. Die
-Datenschutzerklärung sagt das in einem eigenen Abschnitt und weist darauf hin, dass
-ab dem Klick die Bestimmungen des Anbieters gelten. Auch dort steht der Name des
-Anbieters als auszufüllender Platzhalter.
+Die Fußzeile zeigt nur Impressum und Datenschutz. Einen Spendenlink gibt es seit dem
+21.10.2026 bewusst nicht mehr: ohne Spendenkonto wäre er ein Platzhalter, und er zöge
+einen Datenschutz-Abschnitt zu einem Drittanbieter nach sich, den die App nicht braucht.
+Es gibt keine Bezahlschranke, die App ist vollständig nutzbar.
 
 ## Daten mitnehmen und löschen
 
@@ -356,16 +339,10 @@ Deutschland ab. Die Datenschutzerklärung erklärt in einfacher Sprache, dass al
 Trinkdaten im Browser bleiben, was der Hoster in seinen Logdateien sieht, wie die
 Benachrichtigungsberechtigung funktioniert und welche Rechte nach DSGVO bestehen.
 
-**Vor der Veröffentlichung ausfüllen.** Beide Seiten enthalten Platzhalter, die im
-Text grün gestrichelt umrandet und in eckige Klammern gesetzt sind, im Quelltext als
-`<span class="platzhalter">`. Zu ersetzen sind unter anderem Name, Anschrift,
-E-Mail-Adresse, gegebenenfalls Firmenbuch- oder Handelsregisternummer, der Hoster
-samt Speicherdauer der Logdateien und das Datum unter der Datenschutzerklärung.
-Abschnitte, die nur für Unternehmen gelten, sind als solche gekennzeichnet und
-können bei einem privaten Angebot entfallen.
+Impressum und Datenschutz sind ausgefüllt (Stand: Oktober 2026).
 
 Die Texte sind eine sorgfältig gebaute Vorlage und keine Rechtsberatung. Wer
-gewerblich auftritt, sollte sie vor dem Livegang prüfen lassen.
+gewerblich auftritt, sollte sie prüfen lassen.
 
 ## Deploy
 
@@ -414,7 +391,6 @@ Zwei Dinge nach einem Deploy:
 
 - Bei Änderungen die Zeile `var VERSION` in `sw.js` hochzählen, sonst bleibt bei
   Besuchern die alte Fassung im Cache.
-- Die Platzhalter in Impressum und Datenschutz vorher ausfüllen, siehe oben.
 
 ### Alternative: Cloudflare Pages
 
@@ -462,14 +438,12 @@ Einstellungszeilen bei dieser Breite über den Rand liefen: sie brechen jetzt un
 vergrößert. Zusätzlich prüft der Testlauf, dass die Einwilligung im Dokument und
 optisch vor dem Schalter steht und dass im Seitentext keine Heilversprechen stehen.
 
-Für den Spendenlink prüft ein eigener Durchgang, dass beim Laden der Startseite und
+Ein eigener Durchgang prüft, dass beim Laden der Startseite und
 beider Rechtsseiten **keine einzige Anfrage an eine fremde Domain** geht: alles, was
 nicht zum eigenen Server, zu `data:` oder `blob:` gehört, wird im Test hart geblockt
 und gemeldet, geblockt wurde nichts. Dazu ein Blick in den Quelltext aller Dateien
 auf iframe, object, embed, fremde Skripte und Stylesheets, absolute Quellen und
-externe `url()` im CSS, sowie eine Liste aller absoluten Adressen. Der Klick öffnet
-die Seite in einem neuen Tab, das neue Fenster kennt seinen Öffner nicht und bekommt
-keinen Referrer, und eine leere Konstante blendet den Link aus.
+externe `url()` im CSS, sowie eine Liste aller absoluten Adressen.
 
 Tagesgrenze und Wochenstart wurden mit vorgestellter Systemzeit geprüft: bei Grenze
 4 Uhr und Uhrzeit 2 Uhr nachts gilt weiterhin der Vortag, der Stand bleibt stehen und
@@ -556,8 +530,7 @@ drei Seiten ein kleines Favicon als Data-URI bekommen.
 
 ## Stand
 
-Der genannte Auftrag ist umgesetzt. Offen und bewusst nicht enthalten: die
-Platzhalter in Impressum und Datenschutz, die nur der Betreiber ausfüllen kann,
+Der genannte Auftrag ist umgesetzt. Offen und bewusst nicht enthalten:
 Erinnerungen bei geschlossener App über Web-Push (der Service Worker ist da, aber er
 verschickt nichts), feste Uhrzeiten statt eines Intervalls, ein pro Tag mitgeschriebenes
 Ziel und ein Blick auf frühere Wochen (gespeichert sind die Daten dafür bereits).

@@ -1238,11 +1238,6 @@
     <a href="impressum.html">Impressum</a>
     <span aria-hidden="true">·</span>
     <a href="datenschutz.html">Datenschutz</a>
-    <span aria-hidden="true" id="unterstuetzen-trenner">·</span>
-    <!-- Die Adresse setzt das Skript aus SPENDEN_URL. Ohne Skript bleibt der
-         Eintrag ein toter Text statt eines Links ins Leere. -->
-    <a id="unterstuetzen" target="_blank" rel="noopener noreferrer"
-       aria-label="Unterstützen, öffnet eine externe Seite in einem neuen Tab">Unterstützen</a>
   </footer>
   </div>
 
@@ -1311,14 +1306,6 @@
   var ONBOARDING_SCHLUESSEL = "trinkwecker_onboarding";
   var VERLAUF_TAGE = 60; // Ältere Einträge fliegen beim Start raus.
 
-  // ===========================================================================
-  // PLATZHALTER: Adresse der eigenen Spendenseite eintragen, etwa bei Ko-fi,
-  // Liberapay, PayPal oder einem Verein. Ein leerer Wert blendet den Link in der
-  // Fußzeile aus. Eingebunden wird von dort nichts: kein Skript, kein Bild, kein
-  // Rahmen. Erst ein Klick baut überhaupt eine Verbindung dorthin auf.
-  var SPENDEN_URL = "https://example.org/trinkwecker-unterstuetzen";
-  // ===========================================================================
-
   // Beide Listen sind nach getDay() geordnet, also mit Sonntag an Stelle 0.
   // Damit stimmen die Beschriftungen unabhängig davon, wo die Woche beginnt.
   var KUERZEL = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
@@ -1384,8 +1371,6 @@
     document.getElementById("thema-hell"),
     document.getElementById("thema-dunkel")
   ];
-  var elUnterstuetzen = document.getElementById("unterstuetzen");
-  var elUnterstuetzenTrenner = document.getElementById("unterstuetzen-trenner");
   var elSerie = document.getElementById("serie");
   var elSerieText = document.getElementById("serie-text");
   var elSerieStand = document.getElementById("serie-stand");
@@ -2857,14 +2842,6 @@
   if (verlaufAufraeumen()) verlaufSpeichern();
   erinnerungSynchronisieren();
   zeichnen();
-
-  // Der Link bekommt seine Adresse erst hier, aus der Konstanten oben.
-  if (SPENDEN_URL) {
-    elUnterstuetzen.href = SPENDEN_URL;
-  } else {
-    elUnterstuetzen.hidden = true;
-    elUnterstuetzenTrenner.hidden = true;
-  }
 
   // Beim allerersten Start führt die Karte kurz durch die drei Punkte.
   if (!willkommenGesehen()) willkommenOeffnen();
