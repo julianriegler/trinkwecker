@@ -47,18 +47,19 @@ den localStorage.
 
 ## Bedienung
 
-- **Großer Plus-Button:** ein Glas dazu. Zählt auch über das Tagesziel hinaus weiter.
+- **Großer Plus-Button:** ein Glas dazu. Zählt auch über das Tagesziel hinaus weiter. Darunter steht sichtbar „Tipp aufs Plus, wenn du ein Glas getrunken hast.“
 - **+ ½ Glas** und **+ Flasche 0,5 l:** ein halbes Glas beziehungsweise 500 ml.
-- **Letzte Zugabe zurück:** nimmt genau die zuletzt gebuchte Menge wieder heraus.
-- **Tag zurücksetzen:** setzt den Zähler nach Rückfrage auf 0.
+- **Letztes rückgängig:** nimmt genau die zuletzt gebuchte Menge wieder heraus.
+- **Heute auf 0 setzen:** setzt den Zähler nach Rückfrage auf 0.
 - Unter dem Zähler steht die getrunkene Menge in Litern mit einer Nachkommastelle.
 - Der Fortschrittsbalken und die Glas-Symbole füllen sich mit, ein angebrochenes Glas
   wird halb gefüllt gezeigt.
 - **Einstellungen:** Tagesziel, Glasgröße, Tag und Woche, Darstellung, Erinnerungen und deine Daten.
 - Unter der Karte liegen die **Wochenstatistik** mit Serie und Teilen-Knopf sowie
   der **Gesundheitshinweis**.
-- Beim ersten Start steht unter dem Glas eine kleine **Willkommenskarte**: ein Satz zur
-  Bedienung und der Knopf für die Erinnerungen. Das Glas ist sofort antippbar.
+- Beim ersten Start steht über dem Glas kurz, welches Problem der Trinkwecker löst und
+  was du zuerst tust. Unter dem Glas liegt eine kleine **Willkommenskarte** mit einem Satz zu den
+  Einstellungen, einem zu den Erinnerungen und dem Knopf für die Erinnerungen. Das Glas ist sofort antippbar.
 
 ## Installieren und offline nutzen
 
@@ -106,10 +107,10 @@ Es gibt keine Bezahlschranke, die App ist vollständig nutzbar.
 
 Im Einstellungsbereich unter **Deine Daten** stehen drei Aktionen:
 
-- **Daten exportieren** legt über einen Blob und eine Object-URL die Datei
+- **Sicherung speichern** legt über einen Blob und eine Object-URL die Datei
   `trinkwecker-export.json` an. Sie enthält Stand, Einstellungen und Verlauf und
   bleibt auf dem Gerät, es geht nichts an einen Server.
-- **Daten importieren** öffnet ein verstecktes Dateifeld, liest die Datei und
+- **Sicherung einspielen** öffnet ein verstecktes Dateifeld, liest die Datei und
   übernimmt sie nach Prüfung. Erwartet wird `"app": "trinkwecker"`; Zahlen werden
   in ihre Grenzen gezogen, unbrauchbare Verlaufseinträge fallen weg, und ein
   Zählerstand von einem anderen Tag gilt heute nicht mehr.
@@ -297,7 +298,7 @@ Unter dem Schlüssel `trinkwecker` liegt ein kleines JSON-Objekt im localStorage
 ```
 
 `zugaben` listet die einzelnen Buchungen des Tages in der Reihenfolge, in der sie
-eingetragen wurden. Daraus weiß **Letzte Zugabe zurück**, wie viel es herausnehmen
+eingetragen wurden. Daraus weiß **Letztes rückgängig**, wie viel es herausnehmen
 muss.
 
 **Umstieg von Fassung 1:** Ältere Stände haben statt `ml` das Feld `glaeser` und keine

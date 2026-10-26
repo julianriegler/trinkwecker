@@ -12,7 +12,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Trinkwecker">
-<title>Trinkwecker</title>
+<title>Trinkwecker: Wasser zählen, ans Trinken erinnern</title>
 <style>
   /* Dunkel ist der Grundzustand. Das helle Set steht darunter und greift über
      data-theme am html-Element oder, bei Auto, über die Systemeinstellung. */
@@ -156,6 +156,9 @@
 
   h1 .tropfen { color: var(--mint-text); }
 
+  .problem { margin: -18px 0 10px; text-align: left; font-size: 0.85rem; line-height: 1.35; color: var(--text-leise); }
+  .problem p { margin: 0 0 4px; }
+  .problem strong { color: var(--text); }
   .untertitel {
     margin: 6px 0 26px;
     color: var(--text-leise);
@@ -1003,7 +1006,12 @@
   <div class="huelle">
   <main class="karte">
     <h1><span class="tropfen">&#128167;</span> Trinkwecker</h1>
-    <p class="untertitel">Dein Wasser für heute</p>
+    <p class="untertitel">Wasser zählen, ans Trinken erinnern</p>
+    <div class="problem" id="problem" hidden>
+      <p><strong>Das Problem:</strong> Im Alltag vergisst du leicht zu trinken.</p>
+      <p><strong>Die Lösung:</strong> Du zählst jedes Glas mit einem Tipp und siehst, wie weit du heute bist. Auf Wunsch erinnert dich der Trinkwecker, solange er geöffnet ist.</p>
+      <p><strong>Zuerst:</strong> Trink ein Glas und tipp dann aufs Plus.</p>
+    </div>
 
     <div class="stand">
       <span class="zahl" id="zahl">0</span>
@@ -1021,6 +1029,7 @@
     <div class="glaeser" id="glaeser" role="group" aria-label="Gläser für heute, tippe ein Glas um bis dorthin aufzufüllen"></div>
 
     <button class="plus" id="plus" aria-label="Ein Glas Wasser hinzufügen" data-ev="glas">+</button>
+    <p class="einheit" aria-hidden="true">Tipp aufs Plus, wenn du ein Glas getrunken hast.</p>
 
     <div class="zugaben">
       <button class="klein" id="halb" type="button" aria-label="Ein halbes Glas hinzufügen" data-ev="halbes_glas">+ ½ Glas</button>
@@ -1028,8 +1037,8 @@
     </div>
 
     <div class="neben-aktionen">
-      <button class="klein" id="minus">Letzte Zugabe zurück</button>
-      <button class="klein" id="reset">Tag zurücksetzen</button>
+      <button class="klein" id="minus">Letztes rückgängig</button>
+      <button class="klein" id="reset">Heute auf 0 setzen</button>
       <button class="klein schalter" id="schalter" aria-expanded="false" aria-controls="einstellungen" data-ev="einstellungen">Einstellungen</button>
     </div>
 
@@ -1054,7 +1063,7 @@
         <span class="feld-einheit">ml</span>
       </div>
 
-      <p class="feld-hinweis">Tagesziel 4 bis 20 Gläser, Glasgröße 100 bis 1000 ml. Beides bleibt über den Tag hinaus gespeichert.</p>
+      <p class="feld-hinweis">Tagesziel 4 bis 20 Gläser, Glasgröße 100 bis 1000 ml. Beides bleibt gespeichert, auch an den nächsten Tagen.</p>
 
       <div class="abschnitt">
         <p class="abschnitt-titel">Tag und Woche</p>
@@ -1078,8 +1087,8 @@
           </div>
         </div>
 
-        <p class="feld-hinweis">Wer nach Mitternacht noch trinkt, stellt den Tagesbeginn später.
-          Bis zu dieser Stunde zählt alles noch zum Vortag.</p>
+        <p class="feld-hinweis">Trinkst du oft noch nach Mitternacht? Dann stell den Tagesbeginn später.
+          Bis zu dieser Uhrzeit zählt alles noch zum Vortag.</p>
       </div>
 
       <div class="abschnitt">
@@ -1110,11 +1119,11 @@
         <p class="abschnitt-titel" id="erinnerungen-titel">Erinnerungen</p>
 
         <p class="einwilligung" id="einwilligung">
-          Sobald du den Schalter umlegst, fragt dein Browser einmal nach der Erlaubnis für
-          Benachrichtigungen. Sie wird ausschließlich dafür genutzt, dich im gewählten
-          Zeitfenster ans Trinken zu erinnern, solange der Trinkwecker geöffnet ist. Nichts davon verlässt dein Gerät. Du kannst
-          die Erlaubnis jederzeit in den Browsereinstellungen widerrufen oder hier einfach
-          wieder ausschalten.
+          Legst du den Schalter um, fragt dein Browser einmal, ob der Trinkwecker dir Nachrichten
+          zeigen darf. Diese Erlaubnis nutzen wir nur für die Erinnerungen in deinem Zeitfenster.
+          Sie kommen, solange der Trinkwecker geöffnet ist. Nichts davon verlässt dein Gerät.
+          Ausschalten kannst du sie hier mit demselben Schalter. Die Erlaubnis selbst nimmst du in
+          den Einstellungen deines Browsers zurück.
         </p>
 
         <div class="feld">
@@ -1126,7 +1135,7 @@
         </div>
 
         <div class="feld">
-          <label class="feld-name" for="intervall">Intervall</label>
+          <label class="feld-name" for="intervall">Wie oft?</label>
           <select class="auswahl" id="intervall">
             <option value="60">alle 60 Minuten</option>
             <option value="90">alle 90 Minuten</option>
@@ -1144,7 +1153,7 @@
             <select class="auswahl" id="fenster-bis"></select>
           </div>
         </div>
-        <p class="feld-hinweis">Das Fenster liegt innerhalb eines Tages, von vor bis. Passt ein Wert nicht, rückt der andere automatisch nach.</p>
+        <p class="feld-hinweis">Nur in dieser Zeit kommen Erinnerungen. Von und Bis liegen am selben Tag. Passt ein Wert nicht, rückt der andere von selbst nach.</p>
 
         <p class="feld-hinweis" id="erinnerung-hinweis"></p>
       </div>
@@ -1153,15 +1162,18 @@
         <p class="abschnitt-titel">Deine Daten</p>
 
         <div class="daten-knoepfe">
-          <button class="klein" id="export" type="button">Daten exportieren</button>
-          <button class="klein" id="import" type="button">Daten importieren</button>
+          <button class="klein" id="export" type="button">Sicherung speichern</button>
+          <button class="klein" id="import" type="button">Sicherung einspielen</button>
           <button class="klein gefahr" id="loeschen" type="button">Alle Daten löschen</button>
         </div>
 
         <input type="file" id="import-feld" accept="application/json,.json" hidden>
 
-        <p class="feld-hinweis" id="daten-stand" role="status" aria-live="polite">Der Export legt eine
-          JSON-Datei mit Stand, Einstellungen und Verlauf an. Sie bleibt auf deinem Gerät.</p>
+        <p class="feld-hinweis">Alles liegt nur in diesem Browser auf diesem Gerät. „Sicherung speichern“
+          legt eine Datei mit deinem Stand von heute, deinen Einstellungen und dem Verlauf an. Mit
+          „Sicherung einspielen“ holst du sie zurück, auch auf ein neues Gerät. Dabei ersetzt die
+          Datei, was hier gerade gespeichert ist.</p>
+        <p class="feld-hinweis" id="daten-stand" role="status" aria-live="polite"></p>
       </div>
 
       <div class="abschnitt">
@@ -1182,13 +1194,13 @@
       <button class="willkommen-schliessen" id="erststart-schliessen" type="button" aria-label="Willkommen ausblenden">&#215;</button>
     </div>
     <p>
-      Tipp aufs Plus, sobald du ein Glas getrunken hast. Acht Gläser sind als Tagesziel
-      voreingestellt, das ist nur ein Richtwert. Ändern kannst du das in den Einstellungen.
+      Das Tagesziel und die Glasgröße änderst du in den Einstellungen.
     </p>
     <p>
-      Der Trinkwecker kann dich ans Trinken erinnern, solange er geöffnet ist, auch im
-      Hintergrund-Tab. Dein Browser fragt dafür einmal um Erlaubnis. Sie wird nur für diese
-      Erinnerungen genutzt und ist jederzeit widerrufbar.
+      Erinnerungen kommen, solange der Trinkwecker geöffnet ist. Das gilt auch, wenn du
+      gerade einen anderen Tab ansiehst. Dein Browser fragt dafür einmal um Erlaubnis. Wir
+      nutzen sie nur für diese Erinnerungen. Ausschalten kannst du die Erinnerungen
+      jederzeit in den Einstellungen.
     </p>
     <button class="wk-knopf" id="erststart-erinnerungen" type="button">Erinnerungen einschalten</button>
     <p class="wk-stand" id="erststart-stand" role="status" aria-live="polite"></p>
@@ -1216,15 +1228,13 @@
   </section>
 
   <section class="hinweis-karte beta" aria-labelledby="beta-titel">
-    <h2 class="hinweis-titel" id="beta-titel">Du testest den Trinkwecker mit</h2>
+    <h2 class="hinweis-titel" id="beta-titel">Das ist eine Testfassung</h2>
     <p>
-      Der Trinkwecker ist eine <strong>Testfassung</strong>. Er läuft im Browser, damit wir ohne
-      Umweg über einen App-Store schnell verbessern können. In den Play Store und den App Store
-      geht er erst, wenn du und viele andere ihn gern nutzen.
+      Der Trinkwecker ist noch eine <strong>Testfassung</strong>. Du nutzt ihn im Browser, ohne
+      App-Store und ohne Konto. In die App-Stores kommt er erst, wenn viele ihn gern nutzen.
     </p>
     <p>
-      Wenn er dir hilft: <strong>teile ihn</strong>. Und sag uns, was fehlt oder stört. So bauen
-      wir ihn mit dir zusammen weiter.
+      Hilft er dir? Dann teile ihn gern. Und sag uns, was fehlt oder stört.
     </p>
     <div class="beta-formular">
       <button class="klein" id="beta-teilen" type="button" data-ev="teilen_app">App teilen</button>
@@ -1237,8 +1247,13 @@
       <button class="klein" id="beta-senden" type="button">Feedback senden</button>
       <p class="beta-stand" id="beta-stand" role="status" aria-live="polite" hidden></p>
       <p class="beta-klein">
-        Dein Feedback geht an uns (klickmill.app), ohne IP-Adresse und ohne Kennung. Mehr dazu
-        im <a href="datenschutz.html">Datenschutz</a>.
+        Dein Feedback geht an uns, die Macher des Trinkweckers (klickmill.app). Wir speichern
+        dabei weder deine IP-Adresse, also die Internet-Anschrift deines Geräts, noch eine andere
+        Kennung. Deine E-Mail sehen wir nur, wenn du sie selbst einträgst. Deinen Stand und
+        Verlauf schickt das Feedback nie mit. Außerdem meldet ein Nutzungszähler, dass die App geöffnet wurde
+        und welcher der Hauptknöpfe gedrückt wurde,
+        etwa Glas dazu, Einstellungen oder Teilen. Er weiß nicht, wer du bist, und setzt kein Cookie,
+        also keine kleine Datei zum Wiedererkennen. Mehr dazu im <a href="datenschutz.html">Datenschutz</a>.
       </p>
     </div>
   </section>
@@ -1247,20 +1262,20 @@
     <h2 class="hinweis-titel" id="gesundheit-titel">Gesundheitshinweis</h2>
     <p>
       Der Trinkwecker zählt Gläser und erinnert ans Trinken. Mehr macht er nicht. Er
-      <strong>ersetzt keine medizinische Beratung</strong>, stellt keine Diagnose und
-      trifft keine Aussage über deinen Gesundheitszustand.
+      <strong>ersetzt keine medizinische Beratung</strong>. Er stellt keine Diagnose und
+      sagt nichts über deine Gesundheit.
     </p>
     <p>
       Die Voreinstellung von <strong>acht Gläsern ist nur ein Richtwert</strong>. Wie viel
-      für dich passt, hängt unter anderem von Alter, Körpergewicht, Bewegung, Wetter,
-      Ernährung und Medikamenten ab. Tagesziel und Glasgröße kannst du in den Einstellungen
-      jederzeit anpassen.
+      für dich passt, hängt von vielem ab, zum Beispiel von Alter, Körpergewicht, Bewegung,
+      Wetter, Ernährung und Medikamenten. Tagesziel und Glasgröße stellst du in den
+      Einstellungen ein.
     </p>
     <p>
       Bei <strong>Nieren- oder Herzerkrankungen</strong> und anderen Erkrankungen kann eine
-      bestimmte Trinkmenge vorgegeben oder begrenzt sein. Sprich die für dich richtige Menge
-      in diesem Fall mit deiner Ärztin oder deinem Arzt ab und richte dich nach dieser
-      Empfehlung, nicht nach der Voreinstellung dieser App.
+      bestimmte Trinkmenge vorgegeben oder begrenzt sein. Sprich dann mit deiner Ärztin oder
+      deinem Arzt ab, wie viel du trinken sollst. Richte dich nach dieser Empfehlung, nicht nach
+      der Voreinstellung dieser App.
     </p>
   </section>
 
@@ -1303,10 +1318,11 @@
       <section id="wk-schritt-2" aria-labelledby="wk-titel-2" hidden>
         <h3 class="wk-titel" id="wk-titel-2" tabindex="-1">Erinnerungen</h3>
         <p class="wk-text">
-          Der Trinkwecker kann dich in einem Zeitfenster deiner Wahl ans Trinken erinnern,
-          voreingestellt sind 8 bis 20 Uhr. Die Erinnerungen kommen, solange der Trinkwecker
-          geöffnet ist, auch im Hintergrund-Tab. Dein Browser fragt dafür einmal um Erlaubnis. Sie
-          wird nur für diese Erinnerungen genutzt und ist jederzeit widerrufbar.
+          Der Trinkwecker kann dich in einer Zeit deiner Wahl ans Trinken erinnern.
+          Voreingestellt sind 8 bis 20 Uhr. Die Erinnerungen kommen, solange der Trinkwecker
+          geöffnet ist. Das gilt auch, wenn du gerade einen anderen Tab ansiehst. Dein Browser
+          fragt dafür einmal um Erlaubnis. Wir nutzen sie nur für diese Erinnerungen. Ausschalten kannst du
+          die Erinnerungen jederzeit in den Einstellungen.
         </p>
         <button class="wk-knopf" id="wk-erinnerungen" type="button">Erinnerungen einschalten</button>
         <p class="wk-stand" id="wk-erinnerung-stand" role="status" aria-live="polite"></p>
@@ -1923,8 +1939,8 @@
     elWocheText.appendChild(zahl);
     elWocheText.appendChild(document.createTextNode(" von 7 Tagen Ziel erreicht"));
 
-    elWocheFuss.textContent = "Gestrichelt: Tagesziel von " + ziel + " Gläsern. Gespeichert werden die letzten " +
-      VERLAUF_TAGE + " Tage.";
+    elWocheFuss.textContent = "Gestrichelt: Tagesziel von " + ziel + " Gläsern. Dieses Gerät speichert die letzten " +
+      VERLAUF_TAGE + " Tage, nur in diesem Browser.";
   }
 
   // ----- Daten mitnehmen und löschen ----------------------------------------
@@ -1965,9 +1981,9 @@
       document.body.appendChild(verweis);
       verweis.click();
       document.body.removeChild(verweis);
-      datenStandSetzen("Export gestartet: trinkwecker-export.json");
+      datenStandSetzen("Sicherung wird gespeichert: trinkwecker-export.json");
     } catch (e) {
-      datenStandSetzen("Der Export hat in diesem Browser nicht geklappt.");
+      datenStandSetzen("Die Sicherung hat in diesem Browser nicht geklappt.");
     } finally {
       // Erst freigeben, wenn der Download angestoßen ist.
       if (url) window.setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
@@ -1981,7 +1997,7 @@
     try {
       daten = JSON.parse(text);
     } catch (e) {
-      datenStandSetzen("Das ist keine gültige JSON-Datei. Es wurde nichts geändert.");
+      datenStandSetzen("Diese Datei ist keine Sicherung vom Trinkwecker. Es wurde nichts geändert.");
       return;
     }
     if (!daten || typeof daten !== "object" || Array.isArray(daten)) {
@@ -2361,7 +2377,7 @@
       if (erledigt) return; // Ältere Browser melden sich per Callback und per Promise.
       erledigt = true;
       if (erlaubnis === "granted") anschalten();
-      else if (erlaubnis === "denied") ausschalten("Ohne Erlaubnis bleibt es still. Du kannst sie jederzeit wieder erteilen.");
+      else if (erlaubnis === "denied") ausschalten("Ohne Erlaubnis kommen keine Erinnerungen. Erteilen kannst du sie in den Einstellungen deines Browsers.");
       else ausschalten(""); // Dialog weggeklickt: einfach wieder aus, ohne Belehrung.
     }
 
@@ -2515,6 +2531,7 @@
 
   function erststartZeichnen() {
     elErststart.hidden = willkommenGesehen();
+    document.getElementById("problem").hidden = elErststart.hidden; // Problem-Satz nur beim ersten Besuch über dem Glas
     if (elErststart.hidden) return;
     var stand = erinnerungStand();
     elErststartErinnerungen.disabled = stand.gesperrt;
@@ -2668,7 +2685,7 @@
 
   // "Tippe einmal aufs Glas": ein Klick auf das naechste leere Glas ist genau
   // ein Glas, ein Klick weiter vorn fuellt bis dorthin auf. Ein bereits
-  // erreichtes Glas ist disabled, zurueck geht nur ueber "Letzte Zugabe zurueck".
+  // erreichtes Glas ist disabled, zurueck geht nur ueber "Letztes rückgängig".
   // Ein Zuhoerer am Behaelter statt an jedem Glas, damit das Neuzeichnen in
   // glaeserZeichnen() keine Zuhoerer verliert.
   elGlaeser.addEventListener("click", function (ereignis) {
@@ -2691,7 +2708,7 @@
   elFlasche.addEventListener("click", function () { zugeben(FLASCHE_ML); });
   elMinus.addEventListener("click", letzteZurueck);
   elReset.addEventListener("click", function () {
-    if (ml === 0 || window.confirm("Zähler für heute auf 0 zurücksetzen?")) zuruecksetzen();
+    if (ml === 0 || window.confirm("Heute auf 0 setzen? Die anderen Tage und deine Einstellungen bleiben.")) zuruecksetzen();
   });
 
   elSchalter.addEventListener("click", function () {
