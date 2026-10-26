@@ -57,7 +57,8 @@ den localStorage.
 - **Einstellungen:** Tagesziel, Glasgröße, Tag und Woche, Darstellung, Erinnerungen und deine Daten.
 - Unter der Karte liegen die **Wochenstatistik** mit Serie und Teilen-Knopf sowie
   der **Gesundheitshinweis**.
-- Beim ersten Start führt eine **Willkommenskarte** in drei Schritten durch das Nötigste.
+- Beim ersten Start steht unter dem Glas eine kleine **Willkommenskarte**: ein Satz zur
+  Bedienung und der Knopf für die Erinnerungen. Das Glas ist sofort antippbar.
 
 ## Installieren und offline nutzen
 
@@ -161,8 +162,14 @@ und dasselbe Kopfskript, sie wechseln also mit.
 
 ## Beim ersten Start
 
-Beim allerersten Aufruf öffnet sich eine Willkommenskarte, die in drei Schritten
-durch das Nötigste führt:
+Seit dem 26.10.2026 öffnet sich beim ersten Aufruf kein Fenster mehr über dem Glas.
+Stattdessen steht unter dem Glas die Karte `#erststart`: ein Satz zur Bedienung (Plus
+antippen, acht Gläser als Richtwert, änderbar in den Einstellungen), der Knopf
+**Erinnerungen einschalten** mit dem Zweck der Erlaubnis direkt davor, und ein ×.
+Der Knopf ruft dieselbe Funktion wie im Fenster, der Stand darunter ist derselbe.
+
+Die ausführliche Einführung mit drei Schritten öffnet sich nur noch über
+**Einstellungen, Kurze Einführung erneut ansehen**:
 
 1. **Dein Tagesziel:** Gläser pro Tag einstellen, voreingestellt sind acht. Die
    Änderung greift sofort, die Karte zeigt die Menge in Millilitern dazu.
@@ -174,11 +181,11 @@ durch das Nötigste führt:
    Knopf dafür. Läuft der Trinkwecker bereits als App, sagt die Karte das.
 
 Dass die Karte gesehen wurde, steht unter dem Schlüssel `trinkwecker_onboarding`
-im localStorage. Danach erscheint sie nicht mehr. Erneut ansehen lässt sie sich über
-**Einstellungen, Kurze Einführung erneut ansehen**. Wer den Schlüssel im Browser
-löscht, bekommt den Ablauf beim nächsten Laden wieder.
+im localStorage. Das × und jedes Schließen der Einführung setzen ihn, danach erscheint
+die Karte nicht mehr. Wer alle Daten löscht, bekommt die Karte sofort wieder,
+wer nur den Schlüssel im Browser löscht, beim nächsten Laden.
 
-Zur Bedienung: Die Karte ist ein `dialog` im modalen Zustand. Tab bleibt darin
+Zur Bedienung der Einführung: Sie ist ein `dialog` im modalen Zustand. Tab bleibt darin
 gefangen, Escape schließt sie, beim Schritt-Wechsel wandert der Fokus auf die neue
 Überschrift, damit Vorlesehilfen sie ansagen, und beim Schließen kehrt er dorthin
 zurück, wo er vorher war. Jedes Schließen zählt als gesehen, auch das über Escape
@@ -496,7 +503,8 @@ ohne Web Share API steht der Text samt Link tatsächlich in der Zwischenablage,
 zurückgelesen über die Browserschnittstelle. Die Bestätigung blendet sich nach
 sechs Sekunden wieder aus.
 
-Die Willkommenskarte wurde durchgespielt: sie öffnet sich beim ersten Start, blättert
+Die Willkommenskarte wurde durchgespielt (Stand vor dem 26.10.2026, als sie noch beim
+ersten Start als Fenster aufging; seitdem siehe "Beim ersten Start"): sie öffnet sich, blättert
 vor und zurück, das dort gewählte Ziel steht sofort in der App, Schließen speichert
 den Schlüssel, nach einem Reload bleibt sie weg. Nach dem Löschen von
 `trinkwecker_onboarding` startet der Ablauf erneut und ist danach wieder still.

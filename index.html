@@ -869,6 +869,14 @@
     border-top: 1px solid var(--card-rand);
   }
 
+  .erststart-kopf {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .erststart .wk-knopf { margin-top: 4px; }
+
   .hinweis-karte {
     background: var(--card);
     border: 1px solid var(--card-rand);
@@ -1164,6 +1172,28 @@
     <p class="hinweis" id="hinweis" role="status" aria-live="polite"></p>
   </main>
 
+  <!-- Erster Besuch: kein Fenster über dem Glas, sondern diese Karte darunter.
+       Das Glas ist sofort antippbar; die Erinnerungen, der Grund zum Wiederkommen,
+       bleiben mit einem Knopf erreichbar. Die volle Einführung gibt es weiter in
+       den Einstellungen. -->
+  <section class="hinweis-karte erststart" id="erststart" aria-labelledby="erststart-titel" hidden>
+    <div class="erststart-kopf">
+      <h2 class="hinweis-titel" id="erststart-titel">Willkommen beim Trinkwecker</h2>
+      <button class="willkommen-schliessen" id="erststart-schliessen" type="button" aria-label="Willkommen ausblenden">&#215;</button>
+    </div>
+    <p>
+      Tipp aufs Plus, sobald du ein Glas getrunken hast. Acht Gläser sind als Tagesziel
+      voreingestellt, das ist nur ein Richtwert. Ändern kannst du das in den Einstellungen.
+    </p>
+    <p>
+      Der Trinkwecker kann dich ans Trinken erinnern, solange er geöffnet ist, auch im
+      Hintergrund-Tab. Dein Browser fragt dafür einmal um Erlaubnis. Sie wird nur für diese
+      Erinnerungen genutzt und ist jederzeit widerrufbar.
+    </p>
+    <button class="wk-knopf" id="erststart-erinnerungen" type="button">Erinnerungen einschalten</button>
+    <p class="wk-stand" id="erststart-stand" role="status" aria-live="polite"></p>
+  </section>
+
   <section class="woche" aria-labelledby="woche-titel">
     <div class="woche-kopf">
       <h2 class="woche-titel" id="woche-titel">Diese Woche</h2>
@@ -1257,10 +1287,8 @@
           Richtwert. Ändern kannst du das später jederzeit in den Einstellungen.
         </p>
         <p class="wk-text">
-          Noch etwas vorab: Du nutzt eine Testfassung. Der Trinkwecker läuft im Browser, damit
-          wir ihn schnell verbessern können. In die App-Stores kommt er erst, wenn du und viele
-          andere ihn gern nutzen. Unten auf der Seite kannst du ihn teilen und uns sagen, was
-          fehlt.
+          Du nutzt eine Testfassung im Browser. Unten auf der Seite kannst du sie teilen und uns
+          sagen, was fehlt.
         </p>
         <div class="wk-feld">
           <div class="stepper">
@@ -1388,6 +1416,10 @@
   var elWkZielMinus = document.getElementById("wk-ziel-minus");
   var elWkZielPlus = document.getElementById("wk-ziel-plus");
   var elWkMenge = document.getElementById("wk-menge");
+  var elErststart = document.getElementById("erststart");
+  var elErststartSchliessen = document.getElementById("erststart-schliessen");
+  var elErststartErinnerungen = document.getElementById("erststart-erinnerungen");
+  var elErststartStand = document.getElementById("erststart-stand");
   var elWkErinnerungen = document.getElementById("wk-erinnerungen");
   var elWkErinnerungStand = document.getElementById("wk-erinnerung-stand");
   var elWkInstallText = document.getElementById("wk-install-text");
@@ -2448,18 +2480,9 @@
     elWkZielPlus.disabled = ziel >= ZIEL_MAX;
     elWkMenge.textContent = "Gläser, das sind " + nf(ziel * mlProGlas) + " ml am Tag";
 
-    if (!meldungenMoeglich()) {
-      elWkErinnerungen.disabled = true;
-      elWkErinnerungStand.textContent = "Dieser Browser kann keine Erinnerungen anzeigen. Der Zähler funktioniert wie gewohnt.";
-    } else if (erinnerungAn) {
-      elWkErinnerungen.disabled = true;
-      elWkErinnerungStand.textContent = "Erinnerungen sind an, " + intervallText(intervall) +
-        " zwischen " + uhrzeit(fensterVon) + " und " + uhrzeit(fensterBis) + " Uhr.";
-    } else {
-      elWkErinnerungen.disabled = false;
-      elWkErinnerungStand.textContent = statusText ||
-        "Du kannst das auch später in den Einstellungen einschalten.";
-    }
+    var stand = erinnerungStand();
+    elWkErinnerungen.disabled = stand.gesperrt;
+    elWkErinnerungStand.textContent = stand.text;
 
     // Der Weg zum Homescreen ist je nach Gerät ein anderer.
     elWkInstallieren.hidden = !installAufforderung;
@@ -2476,6 +2499,26 @@
       elWkInstallText.textContent = "Im Browsermenü findest du „App installieren“ oder " +
         "„Zum Startbildschirm hinzufügen“. Danach startet der Trinkwecker wie eine eigene App, auch ohne Netz.";
     }
+  }
+
+  // Ein Stand für beide Stellen, an denen man Erinnerungen einschalten kann.
+  function erinnerungStand() {
+    if (!meldungenMoeglich()) {
+      return { gesperrt: true, text: "Dieser Browser kann keine Erinnerungen anzeigen. Der Zähler funktioniert wie gewohnt." };
+    }
+    if (erinnerungAn) {
+      return { gesperrt: true, text: "Erinnerungen sind an, " + intervallText(intervall) +
+        " zwischen " + uhrzeit(fensterVon) + " und " + uhrzeit(fensterBis) + " Uhr." };
+    }
+    return { gesperrt: false, text: statusText || "Du kannst das auch später in den Einstellungen einschalten." };
+  }
+
+  function erststartZeichnen() {
+    elErststart.hidden = willkommenGesehen();
+    if (elErststart.hidden) return;
+    var stand = erinnerungStand();
+    elErststartErinnerungen.disabled = stand.gesperrt;
+    elErststartStand.textContent = stand.text;
   }
 
   function wkSchrittSetzen(neu) {
@@ -2538,6 +2581,7 @@
     wocheZeichnen();
     serieZeichnen();
     willkommenZeichnen();
+    erststartZeichnen();
 
     var offenMl = voll - ml;
     var offenGlaeser = offenMl / mlProGlas;
@@ -2769,6 +2813,12 @@
 
   // Die Erlaubnis wird auch hier nur direkt aus dem Klick heraus erfragt.
   elWkErinnerungen.addEventListener("click", function () { einschalten(); });
+  elErststartErinnerungen.addEventListener("click", function () { einschalten(); });
+  elErststartSchliessen.addEventListener("click", function () {
+    willkommenMerken();
+    erststartZeichnen();
+    elPlus.focus();
+  });
 
   elWkInstallieren.addEventListener("click", function () {
     if (!installAufforderung) return;
@@ -2807,7 +2857,7 @@
   });
 
   // Falls die Karte auf anderem Weg zugeht, gilt sie trotzdem als gesehen.
-  elWillkommen.addEventListener("close", willkommenMerken);
+  elWillkommen.addEventListener("close", function () { willkommenMerken(); erststartZeichnen(); });
 
   // Tab lag über Mitternacht offen oder wurde in einem anderen Tab geändert.
   document.addEventListener("visibilitychange", function () {
@@ -2843,8 +2893,7 @@
   erinnerungSynchronisieren();
   zeichnen();
 
-  // Beim allerersten Start führt die Karte kurz durch die drei Punkte.
-  if (!willkommenGesehen()) willkommenOeffnen();
+  // Erster Start: die Karte unter dem Glas zeigt erststartZeichnen() aus zeichnen().
 })();
 </script>
 
