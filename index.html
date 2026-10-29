@@ -1255,6 +1255,10 @@
         etwa Glas dazu, Einstellungen oder Teilen. Er weiß nicht, wer du bist, und setzt kein Cookie,
         also keine kleine Datei zum Wiedererkennen. Mehr dazu im <a href="datenschutz.html">Datenschutz</a>.
       </p>
+      <label class="beta-klein" for="zaehler-aus" style="display:flex;gap:10px;align-items:flex-start;margin-top:4px">
+        <input type="checkbox" id="zaehler-aus" style="width:22px;height:22px;margin:0;flex:none">
+        <span>Zähler abschalten. Dann meldet dieser Browser keine App-Starts und Knöpfe mehr.</span>
+      </label>
     </div>
   </section>
 
@@ -2085,6 +2089,8 @@
     zugaben = [];
     uebernehmen(); // Liest aus dem nun leeren Speicher, also die Standardwerte.
     zeichnen();
+    var zb = document.getElementById("zaehler-aus"); // Schalter ist mit gelöscht, Kästchen folgt dem Speicher
+    if (zb) { try { zb.checked = localStorage.getItem("trinkwecker-zaehler-aus") === "1"; } catch (e) { zb.checked = false; } zb.dispatchEvent(new Event("change")); }
     datenStandSetzen("Alle Daten des Trinkweckers wurden gelöscht.");
   }
 
@@ -2948,9 +2954,37 @@
   var h = window.location.hostname;
   var lokal = !h || h === "localhost" || h === "127.0.0.1";
   var BASIS = "https://klickmill.app";
+  // Zähler-Schalter: liegt nur in diesem Browser, wird vor jedem Aufruf gelesen.
+  // "Alle Daten löschen" entfernt ihn mit, weil sein Name mit "trinkwecker" beginnt.
+  var ZAEHLER_AUS = "trinkwecker-zaehler-aus";
+  // Gespeicherte Wahl, gilt ab dem nächsten Start.
+  function zaehlerGespeichertAus() {
+    try { return localStorage.getItem(ZAEHLER_AUS) === "1"; } catch (e) { return false; }
+  }
+  // In der laufenden Sitzung zählt das Kästchen selbst: lässt der Browser kein Speichern zu,
+  // bleibt der Zähler trotzdem aus, solange die Seite offen ist.
+  function zaehlerAus() {
+    var box = document.getElementById("zaehler-aus");
+    return box ? box.checked : zaehlerGespeichertAus();
+  }
+  (function () {
+    var box = document.getElementById("zaehler-aus");
+    if (!box) return;
+    var text = box.nextElementSibling, normal = text ? text.textContent : "";
+    box.checked = zaehlerGespeichertAus();
+    box.addEventListener("change", function () {
+      var geklappt = true;
+      try {
+        if (box.checked) localStorage.setItem(ZAEHLER_AUS, "1"); else localStorage.removeItem(ZAEHLER_AUS);
+      } catch (e) { geklappt = false; }
+      if (text) text.textContent = !geklappt && box.checked
+        ? "Zähler aus, aber nur, bis du die Seite schließt. Dein Browser lässt das Speichern nicht zu."
+        : normal;
+    });
+  })();
 
   function ping(ev) {
-    if (lokal) return;
+    if (lokal || zaehlerAus()) return;
     var url = BASIS + "/api/ping?app=trinkwecker" + (ev ? "&ev=" + encodeURIComponent(ev) : "");
     fetch(url).catch(function () {
       // Offline oder blockiert: die App funktioniert unverändert.
