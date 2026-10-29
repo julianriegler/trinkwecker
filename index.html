@@ -156,9 +156,17 @@
 
   h1 .tropfen { color: var(--mint-text); }
 
-  .problem { margin: -18px 0 10px; text-align: left; font-size: 0.85rem; line-height: 1.35; color: var(--text-leise); }
-  .problem p { margin: 0 0 4px; }
+  .problem { margin: -22px 0 6px; text-align: left; font-size: 0.85rem; line-height: 1.4; color: var(--text-leise); }
+  .problem p { margin: 0 0 3px; }
   .problem strong { color: var(--text); }
+  /* Beim ersten Besuch etwas weniger Abstand um die Gläser, damit das Plus trotz Frage im Bild bleibt. */
+  .problem:not([hidden]) ~ .glaeser { margin: 12px 0 16px; }
+  @media (max-height: 660px) {
+    .problem:not([hidden]) ~ .glaeser { margin: 6px 0 8px; }
+    .problem:not([hidden]) ~ .stand-zeile { margin-top: 6px; }
+  }
+  /* Alltagsfrage groß nach dem Muster von Klartext, nur beim ersten Besuch. */
+  .problem .frage { margin: 0 0 4px; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; color: var(--text); }
   .untertitel {
     margin: 6px 0 26px;
     color: var(--text-leise);
@@ -217,15 +225,17 @@
     transition: width .35s ease;
   }
 
+  /* Prozent und Milliliter in einer Zeile: zwei Zeilen sagten fast dasselbe und schoben das Plus aus dem Bild. */
+  .stand-zeile { margin: 10px 0 0; font-size: .85rem; color: var(--text-leise); }
   .prozent {
-    margin: 10px 0 0;
+    margin: 0;
     font-size: .85rem;
     color: var(--text-leise);
     font-variant-numeric: tabular-nums;
   }
 
   .menge {
-    margin: 4px 0 0;
+    margin: 0;
     font-size: .8rem;
     color: var(--text-schwach);
     font-variant-numeric: tabular-nums;
@@ -1008,6 +1018,7 @@
     <h1><span class="tropfen">&#128167;</span> Trinkwecker</h1>
     <p class="untertitel">Wasser zählen, ans Trinken erinnern</p>
     <div class="problem" id="problem" hidden>
+      <p class="frage">Heute schon getrunken?</p>
       <p><strong>Das Problem:</strong> Im Alltag vergisst du leicht zu trinken.</p>
       <p><strong>Die Lösung:</strong> Du zählst jedes Glas mit einem Tipp und siehst, wie weit du heute bist. Auf Wunsch erinnert dich der Trinkwecker, solange er geöffnet ist.</p>
       <p><strong>Zuerst:</strong> Trink ein Glas und tipp dann aufs Plus.</p>
@@ -1023,8 +1034,7 @@
     <div class="balken" role="progressbar" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" aria-label="Fortschritt Tagesziel" id="balken">
       <div class="balken-fuellung" id="fuellung"></div>
     </div>
-    <p class="prozent" id="prozent">0 % vom Tagesziel</p>
-    <p class="menge" id="menge">0 von 2.000 ml</p>
+    <p class="stand-zeile"><span class="prozent" id="prozent">0 % vom Tagesziel</span> · <span class="menge" id="menge">0 von 2.000 ml</span></p>
 
     <div class="glaeser" id="glaeser" role="group" aria-label="Gläser für heute, tippe ein Glas um bis dorthin aufzufüllen"></div>
 
@@ -1123,7 +1133,8 @@
           zeigen darf. Diese Erlaubnis nutzen wir nur für die Erinnerungen in deinem Zeitfenster.
           Sie kommen, solange der Trinkwecker geöffnet ist. Nichts davon verlässt dein Gerät.
           Ausschalten kannst du sie hier mit demselben Schalter. Die Erlaubnis selbst nimmst du in
-          den Einstellungen deines Browsers zurück.
+          den Einstellungen deines Browsers zurück. Siehst du beim Einschalten keine Probe-Meldung,
+          blockiert dein Gerät vermutlich die Mitteilungen, zum Beispiel über „Nicht stören“.
         </p>
 
         <div class="feld">
@@ -2326,27 +2337,73 @@
     timer = null;
     if (!erinnerungAn) return;
     // Still bleiben, wenn das Tagesziel schon steht oder das Fenster gerade zu ist.
-    if (ml < zielMl() && fensterOffen(new Date()) && !melden()) return;
+    if (ml < zielMl() && fensterOffen(new Date())) melden();
     planen();
     zeichnen();
   }
 
-  function melden() {
+  // Meldungen zuerst über den Service Worker: Chrome auf Android lässt new Notification()
+  // nach allgemeinem Wissen nicht zu und verlangt showNotification (auf einem echten Gerät
+  // noch ungeprüft). Ohne Service Worker der alte Weg als Ersatz.
+  var FRIST = "frist";
+  function registrierung() {
     try {
-      new window.Notification("Zeit für ein Glas Wasser", {
-        body: "Noch " + glaeserMitEinheit((zielMl() - ml) / mlProGlas) + " bis zum Tagesziel.",
-        tag: "trinkwecker",
-        lang: "de"
-      });
-      return true;
+      if (!("serviceWorker" in navigator)) return Promise.resolve(null);
+      var sw = navigator.serviceWorker;
+      // ready wartet, bis der Worker aktiv ist (beim ersten Besuch installiert er oft noch);
+      // ohne Registrierung wartet ready ewig, darum vorher getRegistration und eine Frist.
+      return Promise.race([
+        sw.getRegistration().then(function (r) { return r ? sw.ready : null; }),
+        new Promise(function (ok) { setTimeout(function () { ok(FRIST); }, 4000); })
+      ]).then(function (r) {
+        if (r === FRIST) return FRIST;
+        return r && typeof r.showNotification === "function" ? r : null;
+      }, function () { return null; });
     } catch (e) {
-      // Manche Browser erlauben Meldungen nur aus einem Service Worker heraus.
-      ausschalten("Dein Browser zeigt Erinnerungen nur in einer installierten App an. Der Zähler läuft normal weiter.");
-      return false;
+      return Promise.resolve(null); // z. B. SecurityError, wenn Cookies gesperrt sind
     }
+  }
+  function zeigeMeldung(titel, text) {
+    if (rechte() !== "granted") return Promise.resolve(false);
+    // renotify: eine neue Meldung mit gleichem tag klingelt wieder, statt die alte still zu ersetzen.
+    var optionen = { body: text, tag: "trinkwecker", renotify: true, lang: "de" };
+    function direkt(grund) {
+      if (grund) console.warn("Trinkwecker: Meldung über den Service Worker fehlgeschlagen", grund);
+      try { new window.Notification(titel, optionen); return true; }
+      catch (e) { console.warn("Trinkwecker: Meldung fehlgeschlagen", e); return false; }
+    }
+    return registrierung().then(function (r) {
+      if (r === FRIST) return false; // nicht direkt(): sonst käme sie doppelt, wenn der Worker später antwortet
+      if (!r) return direkt();
+      return r.showNotification(titel, optionen).then(function () { return true; }, direkt);
+    }).catch(direkt);
+  }
+  // Fehler kommen erst nach dem Versuch zurück; dann aus, mit Hinweis, statt still.
+  // Der Durchgang verhindert, dass eine alte Antwort einen neu eingeschalteten Durchgang abschaltet.
+  var MELDUNG_GEHT_NICHT = "Dein Browser hat die Erinnerung nicht angezeigt. Der Zähler läuft normal weiter.";
+  var durchgang = 0;
+  function meldenMitPruefung(titel, text) {
+    var mein = durchgang;
+    var versuch;
+    try { versuch = zeigeMeldung(titel, text); } catch (e) { versuch = Promise.resolve(false); }
+    versuch.then(function (ok) { return ok; }, function () { return false; }).then(function (ok) {
+      if (!ok && erinnerungAn && mein === durchgang) {
+        // Fehlt inzwischen die Erlaubnis, das auch so sagen statt „nicht angezeigt“.
+        ausschalten(rechte() === "granted" ? MELDUNG_GEHT_NICHT
+          : "Erinnerungen sind für diese Seite blockiert. In den Browser-Einstellungen lassen sie sich wieder erlauben.");
+      }
+    });
+  }
+  function melden() {
+    meldenMitPruefung("Zeit für ein Glas Wasser", "Noch " + glaeserMitEinheit((zielMl() - ml) / mlProGlas) + " bis zum Tagesziel.");
+  }
+  // Beim Einschalten einmal zeigen, wie die Erinnerung aussieht: klappt es nicht, merkt man es sofort.
+  function probeMelden() {
+    meldenMitPruefung("So sieht die Erinnerung aus", "Der Trinkwecker erinnert dich in deinem Zeitfenster, solange er geöffnet ist.");
   }
 
   function ausschalten(text) {
+    durchgang++;
     erinnerungAn = false;
     naechste = 0;
     timerStoppen();
@@ -2356,6 +2413,7 @@
   }
 
   function anschalten() {
+    durchgang++;
     erinnerungAn = true;
     statusText = "";
     planen();
@@ -2371,6 +2429,7 @@
     }
     if (rechte() === "granted") {
       anschalten();
+      probeMelden();
       return;
     }
     if (rechte() === "denied") {
@@ -2382,7 +2441,7 @@
     function antwort(erlaubnis) {
       if (erledigt) return; // Ältere Browser melden sich per Callback und per Promise.
       erledigt = true;
-      if (erlaubnis === "granted") anschalten();
+      if (erlaubnis === "granted") { anschalten(); probeMelden(); }
       else if (erlaubnis === "denied") ausschalten("Ohne Erlaubnis kommen keine Erinnerungen. Erteilen kannst du sie in den Einstellungen deines Browsers.");
       else ausschalten(""); // Dialog weggeklickt: einfach wieder aus, ohne Belehrung.
     }

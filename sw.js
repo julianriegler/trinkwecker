@@ -63,3 +63,19 @@ self.addEventListener("fetch", function (e) {
     })
   );
 });
+
+// Tipp auf eine Erinnerung: das Trinkwecker-Fenster mit der App nach vorn holen
+// (nicht Impressum oder Datenschutz), sonst oder bei einem Fehler neu öffnen.
+self.addEventListener("notificationclick", function (e) {
+  e.notification.close();
+  function neu() { return self.clients.openWindow ? self.clients.openWindow("./") : null; }
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (fenster) {
+      for (var i = 0; i < fenster.length; i++) {
+        var pfad = new URL(fenster[i].url).pathname;
+        if (/(\/|index\.html)$/.test(pfad) && "focus" in fenster[i]) return fenster[i].focus().catch(neu);
+      }
+      return neu();
+    }).catch(neu)
+  );
+});

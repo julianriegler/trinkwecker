@@ -45,6 +45,12 @@ Zähler, Erinnerungen und Wochenansicht funktionieren dann ebenfalls, nur Instal
 und Offline-Betrieb nicht, und manche Browser blockieren bei direkt geöffneten Dateien
 den localStorage.
 
+## Stand 29.10.2026 (Cache v18, nur lokal)
+
+- Erinnerungen laufen zuerst über den Service Worker (`showNotification`), der alte Weg `new Notification()` bleibt als Ersatz. Grund: Chrome auf Android lässt den alten Weg nach allgemeinem Wissen nicht zu, dann schaltete die App die Erinnerungen nach der ersten fälligen Meldung still ab. Beim Einschalten kommt eine Probe-Meldung. **Auf einem echten Android-Handy und iPhone noch ungeprüft**; bis Julian es geprüft hat, gilt der Fehler nicht als behoben.
+- Schalter „Zähler abschalten“ wie in den anderen Klickmill-Apps; gilt in der laufenden Sitzung über das Kästchen.
+- Beim ersten Besuch steht über dem Glas die Frage „Heute schon getrunken?“ mit Problem-Satz; Prozent und Milliliter stehen in einer Zeile.
+
 ## Bedienung
 
 - **Großer Plus-Button:** ein Glas dazu. Zählt auch über das Tagesziel hinaus weiter. Darunter steht sichtbar „Tipp aufs Plus, wenn du ein Glas getrunken hast.“
